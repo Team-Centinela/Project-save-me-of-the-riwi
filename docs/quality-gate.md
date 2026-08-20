@@ -2,6 +2,8 @@
 
 Nothing reaches `main` or `develop` without the gate running green. The gate is the **same script** locally and in CI: `scripts/verify.sh`. That single fact — local and CI cannot diverge — is the point of the whole quality system.
 
+The gate protects *what* lands in the repo. *How* it lands — which merge strategy per branch — is in [`CONTRIBUTING.md`](../CONTRIBUTING.md#merge-strategy--hybrid-on-purpose).
+
 ---
 
 ## Gate order
@@ -111,6 +113,22 @@ A green local `--full` plus a green CI `gate` check is the only mergeable state.
 
 5. For a coverage failure, open `coverage/index.html` in a browser.
 6. For a dependency deprecation, run `./scripts/check-versions.sh` (without `--gate`) and read the column that says `DEPRECADO`. Replace the package with its documented successor.
+
+---
+
+## Reading the history of `main`
+
+Because `release/* → main` uses a real merge commit (`--no-ff`), `main`'s log contains both the merge commits and the underlying feature commits. The high-level view — one line per release — is recovered with `--first-parent`:
+
+```bash
+# One line per release, just like a squashed history would look
+git log --first-parent main --oneline
+
+# The full graph, for archaeology and git bisect
+git log --mainline parent main --graph --oneline
+```
+
+GitHub's PR diff view for a merge commit shows the same cumulative diff it would show for a squash, so reviewability is unchanged. The difference is invisible at review time and structural at merge time — see [`CONTRIBUTING.md`](../CONTRIBUTING.md#merge-strategy--hybrid-on-purpose).
 
 ---
 

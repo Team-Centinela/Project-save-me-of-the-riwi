@@ -32,13 +32,13 @@ The repo uses a lightweight Git Flow with two long-lived branches and a handful 
 
 ### Short-lived branches
 
-| Prefix       | Branched from | Merged back into               | Naming                                       |
-| ------------ | ------------- | ------------------------------ | -------------------------------------------- |
-| `feature/`   | `develop`     | `develop`                      | `feature/<scope>-<short-desc>`               |
-| `bugfix/`    | `develop`     | `develop`                      | `bugfix/<scope>-<short-desc>`                |
-| `chore/`     | `develop`     | `develop`                      | `chore/<scope>-<short-desc>`                 |
-| `release/`   | `develop`     | `main` **and** `develop`       | `release/vX.Y.Z`                             |
-| `hotfix/`    | `main`        | `main` **and** `develop`       | `hotfix/<scope>-<short-desc>`                |
+| Prefix       | Branched from | Merged back into               | Naming                                       | Merge strategy                          |
+| ------------ | ------------- | ------------------------------ | -------------------------------------------- | --------------------------------------- |
+| `feature/`   | `develop`     | `develop`                      | `feature/<scope>-<short-desc>`               | **Squash**                              |
+| `bugfix/`    | `develop`     | `develop`                      | `bugfix/<scope>-<short-desc>`                | **Squash**                              |
+| `chore/`     | `develop`     | `develop`                      | `chore/<scope>-<short-desc>`                 | **Squash**                              |
+| `release/`   | `develop`     | `main` **and** `develop`       | `release/vX.Y.Z`                             | **Merge commit** (`--no-ff`)            |
+| `hotfix/`    | `main`        | `main` **and** `develop`       | `hotfix/<scope>-<short-desc>`                | **Merge commit** (`--no-ff`)            |
 
 ### Rules
 
@@ -63,9 +63,81 @@ hotfix/env-validation-crash-on-empty-token
 
 ---
 
+## Merge strategy — hybrid, on purpose
+
+The repo uses a **hybrid** strategy. Not everything squashes, and not everything merges with a real commit. The choice depends on whether the source branch will need to exchange changes with the target again.
+
+### The rule
+
+| Merge direction                     | Strategy                  | Why                                                                                                                |
+| ----------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `feature/*` → `develop`             | **Squash**                | Throwaway branch; nothing will ever merge back into it                                                            |
+| `bugfix/*` → `develop`              | **Squash**                | Same                                                                                                               |
+| `chore/*` → `develop`               | **Squash**                | Same                                                                                                               |
+| `release/*` → `main`                | **Merge commit** (`--no-ff`) | `release/*` is the bridge between `develop` and `main`; both branches need a real shared parent to keep round-tripping clean |
+| `release/*` → `develop`             | **Merge commit** (`--no-ff`) | Same                                                                                                               |
+| `hotfix/*` → `main`                 | **Merge commit** (`--no-ff`) | Same                                                                                                               |
+| `hotfix/*` → `develop`              | **Merge commit** (`--no-ff`) | Same                                                                                                               |
+
+### Why not squash everything?
+
+Squash-merge creates a **brand-new commit** on the target branch with only the target's HEAD as its parent — the source branch's history is collapsed into a single fresh commit. That is fine when the source branch is throwaway. It is **not** fine when the source branch and the target are two long-lived branches that need to keep exchanging changes.
+
+The concrete failure mode:
+
+1. `release/v0.1` is squash-merged into `main` → `main` has a synthetic `S1` commit.
+2. `release/v0.1` is squash-merged into `develop` → `develop` has a synthetic `S2` commit with the same diff as `S1` but **a different commit hash**.
+3. `main` later receives a hotfix `H`.
+4. We try to merge `main` back into `develop`. Git finds no shared ancestor that contains the equivalent of `S2` and tries to re-apply the entire `S2` diff as new work — phantom conflicts, even though nothing has actually changed.
+
+The fix is to use **real merge commits** (`--no-ff`) wherever two long-lived branches cross. A real merge commit has two parents, which keeps the shared ancestry intact for every future round-trip.
+
+### Why the `main` history still looks clean
+
+```bash
+git log --first-parent main
+```
+
+shows only the merge commits on `main` — one line per release. The granular feature commits are still in the object graph (so `git bisect` and archaeology still work) but they don't clutter the high-level log. GitHub's PR diff view for a merge commit shows the same cumulative diff it would show for a squash, so reviewability is the same.
+
+### Repo settings this requires
+
+In **Settings → General → Pull Requests**:
+
+| Setting                                 | Value     |
+| --------------------------------------- | --------- |
+| Allow squash merging                    | enabled   |
+| Allow merge commits                      | **enabled** |
+| Allow rebase merging                    | disabled  |
+| Allow auto-merge                        | enabled   |
+| Automatically delete head branches      | enabled   |
+| Default squash commit message           | PR title  |
+
+In **Settings → Branches → Branch protection** on `main` **and** `develop`:
+
+| Setting                                  | Value          |
+| ---------------------------------------- | -------------- |
+| Require linear history                   | **disabled**   |
+
+"Require linear history" literally forbids merge commits and would force you right back into the squash-only problem. It is deliberately off.
+
+### How to choose the merge button for each PR
+
+- **`feature/*`, `bugfix/*`, `chore/*` → `develop`:** click **Squash and merge**.
+- **`release/*` → `main` and `release/*` → `develop`:** click **Create a merge commit**.
+- **`hotfix/*` → `main` and `hotfix/*` → `develop`:** click **Create a merge commit**.
+
+When squash is used, the PR title becomes the commit message — see the convention in the next section. When a merge commit is used, the PR title becomes the merge commit's subject line; follow the same convention so `git log` on `main` stays meaningful.
+
+### Why Dependabot targets `develop`, not `main`
+
+Most of the `main → develop` traffic in a typical repo is Dependabot opening dep-update PRs against `main`. That traffic is what forces the painful reverse sync in the first place. Pointing Dependabot at `develop` (see `.github/dependabot.yml`) eliminates the round-trip entirely for the common case. The only legitimate `main → develop` merge left is a true emergency hotfix committed straight to `main`, which is rare and handled with a `--no-ff` merge commit just like the others.
+
+---
+
 ## Commit and PR title convention
 
-We follow [Conventional Commits 1.0.0](https://www.conventionalcommits.org/). Because the repo uses **squash-merge only** (see below), the **PR title is the commit message** that ends up on `develop` or `main`. Getting the PR title right is the entire commit-message practice here.
+We follow [Conventional Commits 1.0.0](https://www.conventionalcommits.org/). For **squash** merges (feature / bugfix / chore → develop), the PR title is the commit message that ends up on `develop`. For **merge-commit** merges (release/* and hotfix/* into main/develop), the PR title becomes the merge commit's subject line. Either way, getting the PR title right is the entire commit-message practice here.
 
 ### Format
 
@@ -156,11 +228,11 @@ interceptors must be ported to axios interceptors.
 4. **Pass the gate locally before pushing.** Run `bash scripts/verify.sh --quick` for the inner loop, `bash scripts/verify.sh --full` before the push. See the [quality gate](#quality-gate) below.
 5. **Open the PR against the correct base.**
    - `feature/*`, `bugfix/*`, `chore/*` → base is `develop`.
-   - `hotfix/*` → base is `main`, then a backport PR from `main` to `develop`.
-   - `release/*` → base is `main` (and a follow-up PR to `develop`).
+   - `release/*` → base is `main` for the release PR, then a second PR from `release/*` back to `develop`.
+   - `hotfix/*` → base is `main`, then a second PR from `hotfix/*` to `develop` (or from `main` to `develop` once the hotfix lands).
 6. **Reference the issues it closes.** Use `Closes #N`, `Fixes #N`, or `Refs #N` in the PR body.
 7. **Request a review.** At least one approval is required to merge (see branch protection).
-8. **Merge with squash.** Only "Squash and merge" is allowed. The PR title becomes the squash commit message. The head branch is deleted automatically after merge.
+8. **Pick the merge button correctly.** See the [merge strategy](#merge-strategy--hybrid-on-purpose) table above. The PR title is the squash / merge-commit subject line, so follow the convention in the next section.
 9. **Never use `--no-verify`.** A gate that can be skipped is not a gate.
 
 ---
