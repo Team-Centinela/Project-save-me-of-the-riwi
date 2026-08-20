@@ -5,7 +5,7 @@ export const copy = {
   brand: 'Cineteca',
   tagline: 'Discover movies. Build your library.',
   nav: {
-    primary: 'Primary',
+    primary: 'Main',
     home: 'Home',
     explore: 'Explore',
     search: 'Search',
@@ -14,7 +14,7 @@ export const copy = {
   },
   home: {
     title: 'Trending this week',
-    description: 'The catalog is being assembled. The skeleton is up.',
+    description: 'Movies and series trending right now, straight from the TMDB catalog.',
   },
   notFound: {
     title: 'Page not found',

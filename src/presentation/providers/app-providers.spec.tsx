@@ -7,6 +7,7 @@
 
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useQuery } from '@tanstack/react-query';
 import { describe, expect, it, vi } from 'vitest';
 import { AppProviders } from './app-providers';
 
@@ -20,6 +21,24 @@ describe('AppProviders', () => {
       </AppProviders>,
     );
     expect(screen.getByText('child content')).toBeInTheDocument();
+  });
+
+  it('wires a working QueryClient so hooks like useQuery resolve', () => {
+    function Probe() {
+      const query = useQuery({
+        queryKey: ['probe'],
+        queryFn: () => Promise.resolve('ok'),
+      });
+      return <p>{query.data ?? 'loading'}</p>;
+    }
+
+    render(
+      <AppProviders>
+        <Probe />
+      </AppProviders>,
+    );
+
+    expect(screen.getByText('loading')).toBeInTheDocument();
   });
 
   it('renders the error fallback when a child throws', () => {

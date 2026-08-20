@@ -46,6 +46,8 @@ function createQueryClient(): QueryClient {
       queries: {
         staleTime: ONE_MINUTE_MS,
         retry: 1,
+        // TMDB catalog changes daily; refetching on every window focus adds
+        // network noise without surfacing fresher data than the cache holds.
         refetchOnWindowFocus: false,
       },
       mutations: {
