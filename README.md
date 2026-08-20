@@ -167,5 +167,9 @@ For bugs and feature requests, please use the issue templates under [`.github/IS
 
 ## References
 
-- **Project guide (what we build and why):** [Cineteca project guide](https://gist.github.com/xXAreizaXx/16cb8c169ab015adb0be35fac4992863)
-- **Technical baseline (the scaffold that produced this repo):** [Cinética BaseLine](https://gist.github.com/xXAreizaXx/8566c4410fe16fab5864abb72ae55e4a)
+The full project and baseline guides are mirrored inside this repo so they are always reachable:
+
+- **Project guide** (what we build and why) — [`docs/guides/project-guide.md`](./docs/guides/project-guide.md) · [upstream gist](https://gist.github.com/xXAreizaXx/16cb8c169ab015adb0be35fac4992863)
+- **Technical baseline** (the scaffold that produced this repo) — [`docs/guides/baseline.md`](./docs/guides/baseline.md) · [upstream gist](https://gist.github.com/xXAreizaXx/8566c4410fe16fab5864abb72ae55e4a)
+
+If a local copy and the upstream gist diverge, the gist is canonical.

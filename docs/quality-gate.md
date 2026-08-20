@@ -125,7 +125,7 @@ Because `release/* → main` uses a real merge commit (`--no-ff`), `main`'s log 
 git log --first-parent main --oneline
 
 # The full graph, for archaeology and git bisect
-git log --mainline parent main --graph --oneline
+git log --graph --oneline main
 ```
 
 GitHub's PR diff view for a merge commit shows the same cumulative diff it would show for a squash, so reviewability is unchanged. The difference is invisible at review time and structural at merge time — see [`CONTRIBUTING.md`](../CONTRIBUTING.md#merge-strategy--hybrid-on-purpose).

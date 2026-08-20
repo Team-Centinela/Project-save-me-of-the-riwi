@@ -85,10 +85,10 @@ Squash-merge creates a **brand-new commit** on the target branch with only the t
 
 The concrete failure mode:
 
-1. `release/v0.1` is squash-merged into `main` → `main` has a synthetic `S1` commit.
-2. `release/v0.1` is squash-merged into `develop` → `develop` has a synthetic `S2` commit with the same diff as `S1` but **a different commit hash**.
+1. `release/v0.1` is squash-merged into `main` → `main` has a synthetic `S1` commit whose parent is `main`'s previous HEAD.
+2. `release/v0.1` is squash-merged into `develop` → `develop` has a synthetic `S2` commit whose parent is `develop`'s previous HEAD. `S2` and `S1` carry the same diff but are unrelated commit objects.
 3. `main` later receives a hotfix `H`.
-4. We try to merge `main` back into `develop`. Git finds no shared ancestor that contains the equivalent of `S2` and tries to re-apply the entire `S2` diff as new work — phantom conflicts, even though nothing has actually changed.
+4. We try to merge `main` back into `develop`. Git's merge base between `main` and `develop` is the common ancestor from before `release/v0.1`, so the synthetic `S2` is treated as exclusive work on `develop` that `main` does not have. In practice this manifests one of two ways depending on the configuration: `fatal: refusing to merge unrelated histories` (if `--allow-unrelated-histories` is not set), or a long cascade of **phantom conflicts** as Git tries to re-apply the entire `S2` diff — even though every line of it is already in `main` as `S1`.
 
 The fix is to use **real merge commits** (`--no-ff`) wherever two long-lived branches cross. A real merge commit has two parents, which keeps the shared ancestry intact for every future round-trip.
 
@@ -329,7 +329,11 @@ Before opening, search the existing issues to avoid duplicates. For bugs, reprod
 
 ## References
 
-- **Project guide (what we build and why):** [Cineteca project guide](https://gist.github.com/xXAreizaXx/16cb8c169ab015adb0be35fac4992863)
-- **Technical baseline (the scaffold that produced this repo):** [Cinética BaseLine](https://gist.github.com/xXAreizaXx/8566c4410fe16fab5864abb72ae55e4a)
+The full project and baseline guides are mirrored inside this repo so they are always reachable:
+
+- **Project guide** (what we build and why) — [`docs/guides/project-guide.md`](./docs/guides/project-guide.md) · [upstream gist](https://gist.github.com/xXAreizaXx/16cb8c169ab015adb0be35fac4992863)
+- **Technical baseline** (the scaffold that produced this repo) — [`docs/guides/baseline.md`](./docs/guides/baseline.md) · [upstream gist](https://gist.github.com/xXAreizaXx/8566c4410fe16fab5864abb72ae55e4a)
+
+If a local copy and the upstream gist ever diverge, the gist is canonical.
 
 > _This product uses the API of TMDB but is not endorsed or certified by TMDB._
