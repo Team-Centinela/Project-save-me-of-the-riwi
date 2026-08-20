@@ -1,4 +1,9 @@
 {
+  // tsconfig.app.json — TypeScript strict mode + path aliases for the Cineteca app.
+  //
+  // TODO(#upgrade-ts-7): bump typescript to ^7 once typescript-eslint publishes a
+  // build that supports it. Re-test the path alias form and the `noEmit`/`noUncheckedIndexedAccess`
+  // behaviour on the new version. See the project guide's "Future upgrades" section (Cineteca.md).
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "es2023",
@@ -16,11 +21,21 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Linting */
+    /* Path aliases — resolved by vite-tsconfig-paths in build/tests and by tsc for check-types.
+       In TS 6+ paths are resolved relative to the tsconfig.json location, so no baseUrl is needed. */
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
+    /* Strict type-checking */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true
+    "erasableSyntaxOnly": true
   },
   "include": ["src"]
 }
