@@ -48,14 +48,14 @@ git --version
 
 `corepack` existe para que la versión de pnpm la mande el `package.json` y no la máquina de cada uno. Sin eso, un lockfile generado con otra versión produce el clásico "en mi máquina funciona".
 
-En el editor, tres extensiones: **ESLint**, **Prettier** y **Tailwind CSS IntelliSense**, con *formatear al guardar* apuntando a Prettier. Que el editor y el gate digan lo mismo.
+En el editor, tres extensiones: **ESLint**, **Prettier** y **Tailwind CSS IntelliSense**, con _formatear al guardar_ apuntando a Prettier. Que el editor y el gate digan lo mismo.
 
 ---
 
 ## Paso 2 · La credencial de TMDB
 
 1. Crear una cuenta **de práctica** en `themoviedb.org` (no la personal de nadie).
-2. Entrar a *Settings → API* y solicitar acceso. Piden un formulario de uso: declaren que es un proyecto educativo sin fines comerciales.
+2. Entrar a _Settings → API_ y solicitar acceso. Piden un formulario de uso: declaren que es un proyecto educativo sin fines comerciales.
 3. Al aprobarse hay dos credenciales. Copien la segunda, el **API Read Access Token**: sirve igual para las dos versiones de la API, así que hay un solo mecanismo en todo el código en vez de dos.
 
 Checkpoint, antes de seguir:
@@ -112,8 +112,8 @@ Fijen el toolchain y los scripts en `package.json`:
     "check-types": "tsc --noEmit",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
-    "prepare": "husky"
-  }
+    "prepare": "husky",
+  },
 }
 ```
 
@@ -154,18 +154,18 @@ En `tsconfig.app.json`, dentro de `compilerOptions`:
     "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": true,
     "baseUrl": ".",
-    "paths": { "@/*": ["./src/*"] }
-  }
+    "paths": { "@/*": ["./src/*"] },
+  },
 }
 ```
 
-| Bandera | Qué evita |
-|---|---|
-| `noUncheckedIndexedAccess` | Acceder al primer elemento de una lista vacía. Con la bandera, ese acceso es "el elemento **o** indefinido" y el compilador obliga a decidir qué pasa cuando no hay nada. La que atrapa más bugs reales en este proyecto |
-| `exactOptionalPropertyTypes` | Que una propiedad opcional acepte el valor "indefinido" explícito. Al construir filtros esa diferencia decide si una clave de caché cambia o no |
-| `noFallthroughCasesInSwitch` | Un caso sin corte que se cuela al siguiente |
-| `verbatimModuleSyntax` | Imports de tipos que sobreviven al build; obliga a marcarlos como tipos |
-| `noUnusedLocals` / `noUnusedParameters` | Código muerto acumulándose durante una semana de prisa |
+| Bandera                                 | Qué evita                                                                                                                                                                                                                |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `noUncheckedIndexedAccess`              | Acceder al primer elemento de una lista vacía. Con la bandera, ese acceso es "el elemento **o** indefinido" y el compilador obliga a decidir qué pasa cuando no hay nada. La que atrapa más bugs reales en este proyecto |
+| `exactOptionalPropertyTypes`            | Que una propiedad opcional acepte el valor "indefinido" explícito. Al construir filtros esa diferencia decide si una clave de caché cambia o no                                                                          |
+| `noFallthroughCasesInSwitch`            | Un caso sin corte que se cuela al siguiente                                                                                                                                                                              |
+| `verbatimModuleSyntax`                  | Imports de tipos que sobreviven al build; obliga a marcarlos como tipos                                                                                                                                                  |
+| `noUnusedLocals` / `noUnusedParameters` | Código muerto acumulándose durante una semana de prisa                                                                                                                                                                   |
 
 TypeScript resuelve el alias `@/`, pero el empaquetador no se enteraría. Hay que decírselo también a Vite:
 
@@ -289,21 +289,21 @@ export default defineConfig({ plugins: [react(), tailwindcss(), tsconfigPaths()]
 
 ```css
 /* src/index.css — el contrato de diseño del proyecto */
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   /* Superficies y texto: nombres semánticos, jamás descriptivos */
-  --color-surface:        oklch(0.16 0.02 265);
+  --color-surface: oklch(0.16 0.02 265);
   --color-surface-raised: oklch(0.21 0.02 265);
-  --color-ink:            oklch(0.97 0.01 265);
-  --color-ink-muted:      oklch(0.72 0.02 265);
-  --color-brand:          oklch(0.72 0.17 152);
-  --color-danger:         oklch(0.63 0.20 25);
+  --color-ink: oklch(0.97 0.01 265);
+  --color-ink-muted: oklch(0.72 0.02 265);
+  --color-brand: oklch(0.72 0.17 152);
+  --color-danger: oklch(0.63 0.2 25);
 
   /* Estados del catálogo: si mañana cambia el ámbar, se toca UNA línea */
-  --color-status-released:   oklch(0.72 0.17 152);
-  --color-status-unreleased: oklch(0.80 0.15 85);
-  --color-status-unknown:    oklch(0.60 0.02 265);
+  --color-status-released: oklch(0.72 0.17 152);
+  --color-status-unreleased: oklch(0.8 0.15 85);
+  --color-status-unknown: oklch(0.6 0.02 265);
 
   /* La valoración tiene su propio nivel tipográfico */
   --text-rating: 1.375rem;
@@ -311,12 +311,14 @@ export default defineConfig({ plugins: [react(), tailwindcss(), tsconfigPaths()]
 
   /* Área táctil mínima con nombre, para que nadie escriba 44px suelto */
   --spacing-touch: 2.75rem;
-  --radius-card:   0.75rem;
+  --radius-card: 0.75rem;
   --aspect-poster: 2 / 3;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
@@ -380,27 +382,42 @@ export default tseslint.config(
   {
     files: ['src/domain/**/*.ts'],
     rules: {
-      'no-restricted-imports': ['error', {
-        patterns: [
-          { group: ['react', 'react-*', 'axios', '@tanstack/*', 'react-hook-form'],
-            message: 'El dominio no depende de frameworks.' },
-          { group: ['@/presentation/*', '@/infrastructure/*', '@/application/*'],
-            message: 'Las dependencias apuntan hacia dentro.' },
-        ],
-      }],
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['react', 'react-*', 'axios', '@tanstack/*', 'react-hook-form'],
+              message: 'El dominio no depende de frameworks.',
+            },
+            {
+              group: ['@/presentation/*', '@/infrastructure/*', '@/application/*'],
+              message: 'Las dependencias apuntan hacia dentro.',
+            },
+          ],
+        },
+      ],
     },
   },
   {
     files: ['src/application/**/*.ts'],
     rules: {
-      'no-restricted-imports': ['error', {
-        patterns: [
-          { group: ['@/presentation/*', '@/infrastructure/*'],
-            message: 'La aplicación define interfaces; la infraestructura las implementa, no al revés.' },
-          { group: ['axios', 'react', 'react-*'],
-            message: 'La aplicación no sabe cómo viajan los datos.' },
-        ],
-      }],
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/presentation/*', '@/infrastructure/*'],
+              message:
+                'La aplicación define interfaces; la infraestructura las implementa, no al revés.',
+            },
+            {
+              group: ['axios', 'react', 'react-*'],
+              message: 'La aplicación no sabe cómo viajan los datos.',
+            },
+          ],
+        },
+      ],
     },
   },
   // La librería HTTP existe en UN solo directorio. Si aparece en otro, el
@@ -409,14 +426,17 @@ export default tseslint.config(
     files: ['src/**/*.{ts,tsx}'],
     ignores: ['src/infrastructure/http/**'],
     rules: {
-      'no-restricted-imports': ['error', {
-        paths: [{ name: 'axios', message: 'Solo src/infrastructure/http puede importar axios.' }],
-      }],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [{ name: 'axios', message: 'Solo src/infrastructure/http puede importar axios.' }],
+        },
+      ],
     },
   },
 
   { files: ['**/*.spec.{ts,tsx}'], rules: { '@typescript-eslint/no-non-null-assertion': 'off' } },
-  prettier,   // último siempre: apaga lo que Prettier decide
+  prettier, // último siempre: apaga lo que Prettier decide
 );
 ```
 
@@ -479,20 +499,33 @@ import { server } from './src/test/msw/server';
 
 // onUnhandledRequest: 'error' es la línea que hace útil a MSW: una petición que
 // nadie simuló revienta el test en vez de irse a la red de verdad.
-beforeAll(() => { server.listen({ onUnhandledRequest: 'error' }); });
-afterEach(() => { server.resetHandlers(); cleanup(); });
-afterAll(() => { server.close(); });
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: 'error' });
+});
+afterEach(() => {
+  server.resetHandlers();
+  cleanup();
+});
+afterAll(() => {
+  server.close();
+});
 
 // jsdom no implementa ninguno de los dos, y el tema y el virtualizador los piden.
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation((query: string) => ({
-    matches: false, media: query, onchange: null,
-    addEventListener: vi.fn(), removeEventListener: vi.fn(), dispatchEvent: vi.fn(),
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
   })),
 });
 globalThis.ResizeObserver = class {
-  observe() {} unobserve() {} disconnect() {}
+  observe() {}
+  unobserve() {}
+  disconnect() {}
 } as unknown as typeof ResizeObserver;
 ```
 
@@ -522,15 +555,15 @@ mkdir -p \
 
 Las carpetas quedan vacías. La duda real de la semana no es qué carpetas hay, sino **dónde va este archivo**:
 
-| Lo que están escribiendo | Va en |
-|---|---|
-| Una regla de negocio, un estado, un formateador | `domain/` |
-| La interfaz de "algo que trae datos" o "algo que los guarda" | `application/ports/` |
-| La llamada a la red con su validación | `infrastructure/api/` |
-| El cliente HTTP y sus interceptores | `infrastructure/http/` |
-| El acceso al almacenamiento del navegador | `infrastructure/storage/` |
-| Un hook de datos, un componente, una ruta | `presentation/` |
-| Un texto visible por el usuario | `presentation/copy/` |
+| Lo que están escribiendo                                     | Va en                     |
+| ------------------------------------------------------------ | ------------------------- |
+| Una regla de negocio, un estado, un formateador              | `domain/`                 |
+| La interfaz de "algo que trae datos" o "algo que los guarda" | `application/ports/`      |
+| La llamada a la red con su validación                        | `infrastructure/api/`     |
+| El cliente HTTP y sus interceptores                          | `infrastructure/http/`    |
+| El acceso al almacenamiento del navegador                    | `infrastructure/storage/` |
+| Un hook de datos, un componente, una ruta                    | `presentation/`           |
+| Un texto visible por el usuario                              | `presentation/copy/`      |
 
 **Regla de bolsillo:** si un archivo de `domain/` necesitara instalar algo para funcionar, está en la carpeta equivocada.
 
@@ -583,12 +616,12 @@ printf '\n.env.local\n.env*.local\ncoverage\n' >> .gitignore
 
 Cuatro archivos base, sin ninguna funcionalidad dentro:
 
-| Archivo | Qué contiene |
-|---|---|
-| `src/main.tsx` | El punto de entrada: importa el CSS, monta React en modo estricto y envuelve la app en los proveedores |
+| Archivo                                        | Qué contiene                                                                                                                                                               |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/main.tsx`                                 | El punto de entrada: importa el CSS, monta React en modo estricto y envuelve la app en los proveedores                                                                     |
 | `src/presentation/providers/app-providers.tsx` | El proveedor de la caché de datos y el límite de errores de render. Las opciones por defecto de la caché **se dejan para el paso de la capa de datos**: aquí solo se monta |
-| `src/presentation/routes/router.tsx` | El enrutador con una ruta raíz, un contenedor común y una ruta de "no encontrado". Vacías |
-| `src/presentation/routes/root-layout.tsx` | La cabecera, el pie con la atribución a TMDB y el hueco donde se pintarán las páginas |
+| `src/presentation/routes/router.tsx`           | El enrutador con una ruta raíz, un contenedor común y una ruta de "no encontrado". Vacías                                                                                  |
+| `src/presentation/routes/root-layout.tsx`      | La cabecera, el pie con la atribución a TMDB y el hueco donde se pintarán las páginas                                                                                      |
 
 Tres decisiones que se toman ahora y no se discuten después:
 
@@ -727,20 +760,20 @@ pnpm build && pnpm preview        # build de producción, servido para medir
 
 ## Solución de problemas de la línea base
 
-| Síntoma | Causa | Arreglo |
-|---|---|---|
-| `401` al probar la credencial | Token mal copiado o mandado como clave de v3 | Bearer, y revisen saltos de línea al pegar |
-| Las clases de Tailwind no aplican | Falta el plugin o el `@import` | Plugin en `vite.config.ts` y `@import "tailwindcss"` en `src/index.css` |
-| El linter con reglas de tipo no corre | TypeScript 7 con `typescript-eslint` 8 | Fijen TypeScript 6.0.3 (paso 4) |
-| ESLint no encuentra el proyecto de TS | Falta `projectService` o el directorio raíz | Bloque `languageOptions.parserOptions` del paso 7 |
-| El alias `@/` falla en las pruebas | Falta el plugin de rutas en la config de Vitest | `vite-tsconfig-paths` en `vitest.config.ts` |
-| `matchMedia is not a function` | jsdom no lo implementa | El stub del `vitest.setup.ts` (paso 8) |
-| `ResizeObserver is not defined` | Igual | Mismo archivo |
-| MSW: `request not handled` | No hay simulación para esa URL | Añádanla. El error es la característica, no el fallo |
-| Los hooks de git no se ejecutan | Falta el script `prepare` o `husky init` | Paso 3 y paso 12; después, `pnpm install` otra vez |
-| El gate falla por cobertura con el proyecto vacío | Los umbrales están activados antes de tiempo | Siguen comentados hasta el paso del dominio (paso 8) |
-| `pnpm` no es la versión esperada | Corepack deshabilitado | `corepack enable` y `packageManager` en `package.json` |
+| Síntoma                                           | Causa                                           | Arreglo                                                                 |
+| ------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------- |
+| `401` al probar la credencial                     | Token mal copiado o mandado como clave de v3    | Bearer, y revisen saltos de línea al pegar                              |
+| Las clases de Tailwind no aplican                 | Falta el plugin o el `@import`                  | Plugin en `vite.config.ts` y `@import "tailwindcss"` en `src/index.css` |
+| El linter con reglas de tipo no corre             | TypeScript 7 con `typescript-eslint` 8          | Fijen TypeScript 6.0.3 (paso 4)                                         |
+| ESLint no encuentra el proyecto de TS             | Falta `projectService` o el directorio raíz     | Bloque `languageOptions.parserOptions` del paso 7                       |
+| El alias `@/` falla en las pruebas                | Falta el plugin de rutas en la config de Vitest | `vite-tsconfig-paths` en `vitest.config.ts`                             |
+| `matchMedia is not a function`                    | jsdom no lo implementa                          | El stub del `vitest.setup.ts` (paso 8)                                  |
+| `ResizeObserver is not defined`                   | Igual                                           | Mismo archivo                                                           |
+| MSW: `request not handled`                        | No hay simulación para esa URL                  | Añádanla. El error es la característica, no el fallo                    |
+| Los hooks de git no se ejecutan                   | Falta el script `prepare` o `husky init`        | Paso 3 y paso 12; después, `pnpm install` otra vez                      |
+| El gate falla por cobertura con el proyecto vacío | Los umbrales están activados antes de tiempo    | Siguen comentados hasta el paso del dominio (paso 8)                    |
+| `pnpm` no es la versión esperada                  | Corepack deshabilitado                          | `corepack enable` y `packageManager` en `package.json`                  |
 
 ---
 
-*Este producto usa la API de TMDB pero no está avalado ni certificado por TMDB.*
+_Este producto usa la API de TMDB pero no está avalado ni certificado por TMDB._

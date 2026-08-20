@@ -25,20 +25,20 @@ The repo uses a lightweight Git Flow with two long-lived branches and a handful 
 
 ### Long-lived branches
 
-| Branch  | Purpose                                                              | Receives merges from         | Protection                                                                 |
-| ------- | -------------------------------------------------------------------- | ---------------------------- | -------------------------------------------------------------------------- |
-| `main`  | Production-ready code. Every commit on `main` is releasable.         | `release/*`, `hotfix/*`      | PR + 1 review + green CI + linear history + admins included                |
-| `develop` | Integration branch for the next release. Features accumulate here. | `feature/*`, `bugfix/*`, `release/*`, `hotfix/*` | PR + 1 review + green CI + linear history                                  |
+| Branch    | Purpose                                                            | Receives merges from                             | Protection                                                  |
+| --------- | ------------------------------------------------------------------ | ------------------------------------------------ | ----------------------------------------------------------- |
+| `main`    | Production-ready code. Every commit on `main` is releasable.       | `release/*`, `hotfix/*`                          | PR + 1 review + green CI + linear history + admins included |
+| `develop` | Integration branch for the next release. Features accumulate here. | `feature/*`, `bugfix/*`, `release/*`, `hotfix/*` | PR + 1 review + green CI + linear history                   |
 
 ### Short-lived branches
 
-| Prefix       | Branched from | Merged back into               | Naming                                       | Merge strategy                          |
-| ------------ | ------------- | ------------------------------ | -------------------------------------------- | --------------------------------------- |
-| `feature/`   | `develop`     | `develop`                      | `feature/<scope>-<short-desc>`               | **Squash**                              |
-| `bugfix/`    | `develop`     | `develop`                      | `bugfix/<scope>-<short-desc>`                | **Squash**                              |
-| `chore/`     | `develop`     | `develop`                      | `chore/<scope>-<short-desc>`                 | **Squash**                              |
-| `release/`   | `develop`     | `main` **and** `develop`       | `release/vX.Y.Z`                             | **Merge commit** (`--no-ff`)            |
-| `hotfix/`    | `main`        | `main` **and** `develop`       | `hotfix/<scope>-<short-desc>`                | **Merge commit** (`--no-ff`)            |
+| Prefix     | Branched from | Merged back into         | Naming                         | Merge strategy               |
+| ---------- | ------------- | ------------------------ | ------------------------------ | ---------------------------- |
+| `feature/` | `develop`     | `develop`                | `feature/<scope>-<short-desc>` | **Squash**                   |
+| `bugfix/`  | `develop`     | `develop`                | `bugfix/<scope>-<short-desc>`  | **Squash**                   |
+| `chore/`   | `develop`     | `develop`                | `chore/<scope>-<short-desc>`   | **Squash**                   |
+| `release/` | `develop`     | `main` **and** `develop` | `release/vX.Y.Z`               | **Merge commit** (`--no-ff`) |
+| `hotfix/`  | `main`        | `main` **and** `develop` | `hotfix/<scope>-<short-desc>`  | **Merge commit** (`--no-ff`) |
 
 ### Rules
 
@@ -69,15 +69,15 @@ The repo uses a **hybrid** strategy. Not everything squashes, and not everything
 
 ### The rule
 
-| Merge direction                     | Strategy                  | Why                                                                                                                |
-| ----------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `feature/*` → `develop`             | **Squash**                | Throwaway branch; nothing will ever merge back into it                                                            |
-| `bugfix/*` → `develop`              | **Squash**                | Same                                                                                                               |
-| `chore/*` → `develop`               | **Squash**                | Same                                                                                                               |
-| `release/*` → `main`                | **Merge commit** (`--no-ff`) | `release/*` is the bridge between `develop` and `main`; both branches need a real shared parent to keep round-tripping clean |
-| `release/*` → `develop`             | **Merge commit** (`--no-ff`) | Same                                                                                                               |
-| `hotfix/*` → `main`                 | **Merge commit** (`--no-ff`) | Same                                                                                                               |
-| `hotfix/*` → `develop`              | **Merge commit** (`--no-ff`) | Same                                                                                                               |
+| Merge direction         | Strategy                     | Why                                                                                                                          |
+| ----------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `feature/*` → `develop` | **Squash**                   | Throwaway branch; nothing will ever merge back into it                                                                       |
+| `bugfix/*` → `develop`  | **Squash**                   | Same                                                                                                                         |
+| `chore/*` → `develop`   | **Squash**                   | Same                                                                                                                         |
+| `release/*` → `main`    | **Merge commit** (`--no-ff`) | `release/*` is the bridge between `develop` and `main`; both branches need a real shared parent to keep round-tripping clean |
+| `release/*` → `develop` | **Merge commit** (`--no-ff`) | Same                                                                                                                         |
+| `hotfix/*` → `main`     | **Merge commit** (`--no-ff`) | Same                                                                                                                         |
+| `hotfix/*` → `develop`  | **Merge commit** (`--no-ff`) | Same                                                                                                                         |
 
 ### Why not squash everything?
 
@@ -104,20 +104,20 @@ shows only the merge commits on `main` — one line per release. The granular fe
 
 In **Settings → General → Pull Requests**:
 
-| Setting                                 | Value     |
-| --------------------------------------- | --------- |
-| Allow squash merging                    | enabled   |
-| Allow merge commits                      | **enabled** |
-| Allow rebase merging                    | disabled  |
-| Allow auto-merge                        | enabled   |
-| Automatically delete head branches      | enabled   |
-| Default squash commit message           | PR title  |
+| Setting                            | Value       |
+| ---------------------------------- | ----------- |
+| Allow squash merging               | enabled     |
+| Allow merge commits                | **enabled** |
+| Allow rebase merging               | disabled    |
+| Allow auto-merge                   | enabled     |
+| Automatically delete head branches | enabled     |
+| Default squash commit message      | PR title    |
 
 In **Settings → Branches → Branch protection** on `main` **and** `develop`:
 
-| Setting                                  | Value          |
-| ---------------------------------------- | -------------- |
-| Require linear history                   | **disabled**   |
+| Setting                | Value        |
+| ---------------------- | ------------ |
+| Require linear history | **disabled** |
 
 "Require linear history" literally forbids merge commits and would force you right back into the squash-only problem. It is deliberately off.
 
@@ -151,19 +151,19 @@ We follow [Conventional Commits 1.0.0](https://www.conventionalcommits.org/). Fo
 
 ### Allowed types
 
-| Type       | Use when                                                     |
-| ---------- | ------------------------------------------------------------ |
-| `feat`     | A new user-visible feature                                   |
-| `fix`      | A bug fix                                                    |
-| `docs`     | Documentation-only changes                                   |
-| `refactor` | A code change that neither fixes a bug nor adds a feature   |
-| `perf`     | A code change that improves performance                      |
-| `test`     | Adding or correcting tests                                   |
-| `chore`    | Tooling, CI, dependencies, or other non-product changes     |
-| `build`    | Changes to the build system or external dependencies         |
-| `ci`       | Changes to CI configuration files and scripts                |
-| `style`    | Formatting only (no logic change)                            |
-| `revert`   | Reverts a previous commit                                    |
+| Type       | Use when                                                  |
+| ---------- | --------------------------------------------------------- |
+| `feat`     | A new user-visible feature                                |
+| `fix`      | A bug fix                                                 |
+| `docs`     | Documentation-only changes                                |
+| `refactor` | A code change that neither fixes a bug nor adds a feature |
+| `perf`     | A code change that improves performance                   |
+| `test`     | Adding or correcting tests                                |
+| `chore`    | Tooling, CI, dependencies, or other non-product changes   |
+| `build`    | Changes to the build system or external dependencies      |
+| `ci`       | Changes to CI configuration files and scripts             |
+| `style`    | Formatting only (no logic change)                         |
+| `revert`   | Reverts a previous commit                                 |
 
 ### Allowed scopes
 
@@ -241,10 +241,10 @@ interceptors must be ported to axios interceptors.
 
 Nothing reaches `main` or `develop` without the gate running green. The gate has two modes, both implemented in `scripts/verify.sh`:
 
-| Mode       | When                              | What it runs                                                                |
-| ---------- | --------------------------------- | --------------------------------------------------------------------------- |
-| `--quick`  | Pre-commit (Husky)                | format → lint → types                                                       |
-| `--full`   | Pre-push (Husky) and CI           | format → lint → types → tests (with coverage) → build → dependency check    |
+| Mode      | When                    | What it runs                                                             |
+| --------- | ----------------------- | ------------------------------------------------------------------------ |
+| `--quick` | Pre-commit (Husky)      | format → lint → types                                                    |
+| `--full`  | Pre-push (Husky) and CI | format → lint → types → tests (with coverage) → build → dependency check |
 
 ### Husky hooks
 
@@ -274,13 +274,13 @@ For the full reference, see [`docs/quality-gate.md`](./docs/quality-gate.md).
 
 The codebase follows Clean Architecture with a strict **dependency rule**: dependencies point inward, and the domain layer is pure TypeScript.
 
-| Layer              | May import                                | Must not import                              |
-| ------------------ | ----------------------------------------- | -------------------------------------------- |
-| `domain/`          | other `domain/` modules                   | React, Axios, TanStack Query, anything from `application/`, `infrastructure/`, `presentation/` |
-| `application/`     | `domain/`                                 | React, Axios, `presentation/`, `infrastructure/` |
-| `infrastructure/`  | `domain/`, `application/`, axios          | React, `presentation/`                       |
-| `presentation/`    | everything below it                       | —                                            |
-| `infrastructure/http/` | axios (only here)                    | anywhere else uses axios                      |
+| Layer                  | May import                       | Must not import                                                                                |
+| ---------------------- | -------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `domain/`              | other `domain/` modules          | React, Axios, TanStack Query, anything from `application/`, `infrastructure/`, `presentation/` |
+| `application/`         | `domain/`                        | React, Axios, `presentation/`, `infrastructure/`                                               |
+| `infrastructure/`      | `domain/`, `application/`, axios | React, `presentation/`                                                                         |
+| `presentation/`        | everything below it              | —                                                                                              |
+| `infrastructure/http/` | axios (only here)                | anywhere else uses axios                                                                       |
 
 The linter enforces this rule in `eslint.config.js` — see the `no-restricted-imports` blocks. A file in `domain/` that imports `react` fails lint, locally and in CI.
 

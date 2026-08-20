@@ -1,7 +1,7 @@
 name: Chore / Tech Debt
 description: Track internal work — refactors, tooling, dependency upgrades, documentation, or any non-user-facing change.
-title: "[Chore]: "
-labels: ["chore"]
+title: '[Chore]: '
+labels: ['chore']
 type: task
 body:
   - type: markdown

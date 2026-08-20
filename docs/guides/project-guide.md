@@ -6,7 +6,7 @@
 
 **Descubrimiento de cine y biblioteca personal · cliente web (solo consumo de API)**
 
-> **Guía del proyecto.** Dice *qué* se construye y *por qué* cada decisión importa. El paso a paso técnico —comandos, archivos, configuración— vive en la **Guía Técnica**. Aquí no hay una sola línea de código a propósito: si una decisión no se puede explicar con palabras, todavía no está entendida.
+> **Guía del proyecto.** Dice _qué_ se construye y _por qué_ cada decisión importa. El paso a paso técnico —comandos, archivos, configuración— vive en la **Guía Técnica**. Aquí no hay una sola línea de código a propósito: si una decisión no se puede explicar con palabras, todavía no está entendida.
 
 ---
 
@@ -56,15 +56,15 @@ El dominio es TypeScript puro: no sabe que existe React, ni Axios, ni el navegad
 
 **Límite de tasa.** Unas 50 peticiones por segundo por IP. Ante un `429`, respetar la espera que indica el servidor.
 
-| Endpoint | Para qué |
-|---|---|
-| `GET /configuration` | Base y tamaños de imagen. Se pide una vez y se cachea para siempre |
-| `GET /genre/movie/list` | Catálogo de géneros para los filtros |
-| `GET /discover/movie` | **Descubrimiento con filtros**: género, año, nota mínima, votos mínimos, orden |
-| `GET /search/movie` | Búsqueda por texto |
-| `GET /movie/{id}` | Ficha completa. Con el parámetro de expansión trae elenco y tráilers **en la misma petición** |
-| `GET /movie/{id}/recommendations` | Recomendadas, para la sección inferior de la ficha |
-| `GET /trending/movie/week` | Portada de la pantalla de inicio |
+| Endpoint                          | Para qué                                                                                      |
+| --------------------------------- | --------------------------------------------------------------------------------------------- |
+| `GET /configuration`              | Base y tamaños de imagen. Se pide una vez y se cachea para siempre                            |
+| `GET /genre/movie/list`           | Catálogo de géneros para los filtros                                                          |
+| `GET /discover/movie`             | **Descubrimiento con filtros**: género, año, nota mínima, votos mínimos, orden                |
+| `GET /search/movie`               | Búsqueda por texto                                                                            |
+| `GET /movie/{id}`                 | Ficha completa. Con el parámetro de expansión trae elenco y tráilers **en la misma petición** |
+| `GET /movie/{id}/recommendations` | Recomendadas, para la sección inferior de la ficha                                            |
+| `GET /trending/movie/week`        | Portada de la pantalla de inicio                                                              |
 
 Siete endpoints. Toda la dificultad del proyecto está en cómo los consumen, no en cuántos son.
 
@@ -76,11 +76,11 @@ Siete endpoints. Toda la dificultad del proyecto está en cómo los consumen, no
 
 Toda pantalla que muestra datos tiene **cuatro caminos, no uno**. En un buscador, el estado vacío no es un caso raro: es lo que ve la mitad de la gente que filtra demasiado.
 
-| Estado | Qué se muestra |
-|---|---|
-| **Carga** | Un esqueleto con la forma de las tarjetas reales, no un indicador giratorio centrado. El esqueleto comunica qué va a aparecer y evita que el diseño salte cuando llegan los datos |
-| **Error** | Lenguaje llano y un botón de reintento. "No pudimos cargar las películas", no "Error 500". Si es límite de tasa: "vamos demasiado rápido, reintentando en 3 s" |
-| **Vacío inicial** | "Tu cineteca está vacía", con un enlace a explorar. Un vacío sin salida es un callejón |
+| Estado               | Qué se muestra                                                                                                                                                                          |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Carga**            | Un esqueleto con la forma de las tarjetas reales, no un indicador giratorio centrado. El esqueleto comunica qué va a aparecer y evita que el diseño salte cuando llegan los datos       |
+| **Error**            | Lenguaje llano y un botón de reintento. "No pudimos cargar las películas", no "Error 500". Si es límite de tasa: "vamos demasiado rápido, reintentando en 3 s"                          |
+| **Vacío inicial**    | "Tu cineteca está vacía", con un enlace a explorar. Un vacío sin salida es un callejón                                                                                                  |
 | **Vacío por filtro** | "Ninguna película coincide con estos filtros", con un botón para **limpiarlos**. Convertir el callejón en una acción es la mitad del trabajo de experiencia de usuario de este proyecto |
 
 **La tarjeta de película** tiene tres niveles de jerarquía, no uno: el título en semibold, el año y la duración atenuados, y la valoración en su propio nivel tipográfico con su recuento y su plural correcto. El estado nunca se comunica solo con color: una película sin estrenar lleva una etiqueta con texto, no solo un borde gris. Y el póster reserva su proporción **antes** de cargar, para que la cuadrícula no salte.
@@ -120,25 +120,25 @@ La trampa que sale en la evaluación: **la traducción que no existe.** Si la si
 
 Las versiones son las estables verificadas contra el registry de npm el 19 de agosto de 2026. **La tabla es una foto; el registry es la verdad**: verifíquenlas antes de instalar y usen la última estable que el resto del ecosistema soporte — nunca versiones de prueba.
 
-| Capa | Herramienta | Versión | Por qué |
-|---|---|---|---|
-| Build | **Vite** | 8.2.1 | Arranque instantáneo, recarga en caliente real, build optimizado sin configurar |
-| Lenguaje | **TypeScript** (estricto) | **6.0.3** | **No la 7**: el linter con reglas de tipo todavía no la admite, y ese linter es quien impone la arquitectura. Simbiosis antes que novedad |
-| UI | **React** | 19.2.8 | — |
-| Rutas | **React Router** | 8.3.0 | Rutas anidadas, estado en la URL, carga por ruta |
-| Estilos | **Tailwind CSS** | 4.3.3 | Tokens de diseño en el CSS, sin archivo de configuración |
-| Variantes | **cva** + **tailwind-merge** + **clsx** | 0.7.1 / 3.6.0 / 2.1.1 | Variantes tipadas y fusión de clases sin colisiones |
-| Datos remotos | **TanStack Query** | 5.101.4 | Caché, revalidación, paginación infinita, mutaciones optimistas |
-| Transporte | **Axios** | 1.19.0 | Una sola instancia, interceptores, cancelación |
-| Validación | **Zod** | 4.4.3 | El schema es el tipo. Valida la red, el almacenamiento local y los formularios |
-| Formularios | **React Hook Form** + resolvers | 7.85.0 / 5.9.1 | Renders mínimos; el mismo schema valida y tipa |
-| Virtualización | **@tanstack/react-virtual** | 3.14.10 | Memoria constante con miles de tarjetas |
-| Iconos | **lucide-react** | 1.33.0 | Ligero y con importación selectiva |
-| Errores de UI | **react-error-boundary** | 6.1.3 | Un error de render no deja la pantalla en blanco |
-| Pruebas | **Vitest** + **Testing Library** + **MSW** | 4.1.11 / 16.3.2 / 2.15.0 | Dominio en unitarias, componentes por rol accesible, red simulada en el borde |
-| Calidad | **ESLint** + **typescript-eslint** + **Prettier** | 10.8.1 / 8.67.0 / 3.9.6 | Cero advertencias toleradas |
-| Gate | **Husky** + **lint-staged** + `verify.sh` | 9.1.7 / 17.3.0 | Un commit con un tipo `any` no entra |
-| Paquetes | **pnpm** | 11.22.0 | Instalación rápida y determinista |
+| Capa           | Herramienta                                       | Versión                  | Por qué                                                                                                                                   |
+| -------------- | ------------------------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Build          | **Vite**                                          | 8.2.1                    | Arranque instantáneo, recarga en caliente real, build optimizado sin configurar                                                           |
+| Lenguaje       | **TypeScript** (estricto)                         | **6.0.3**                | **No la 7**: el linter con reglas de tipo todavía no la admite, y ese linter es quien impone la arquitectura. Simbiosis antes que novedad |
+| UI             | **React**                                         | 19.2.8                   | —                                                                                                                                         |
+| Rutas          | **React Router**                                  | 8.3.0                    | Rutas anidadas, estado en la URL, carga por ruta                                                                                          |
+| Estilos        | **Tailwind CSS**                                  | 4.3.3                    | Tokens de diseño en el CSS, sin archivo de configuración                                                                                  |
+| Variantes      | **cva** + **tailwind-merge** + **clsx**           | 0.7.1 / 3.6.0 / 2.1.1    | Variantes tipadas y fusión de clases sin colisiones                                                                                       |
+| Datos remotos  | **TanStack Query**                                | 5.101.4                  | Caché, revalidación, paginación infinita, mutaciones optimistas                                                                           |
+| Transporte     | **Axios**                                         | 1.19.0                   | Una sola instancia, interceptores, cancelación                                                                                            |
+| Validación     | **Zod**                                           | 4.4.3                    | El schema es el tipo. Valida la red, el almacenamiento local y los formularios                                                            |
+| Formularios    | **React Hook Form** + resolvers                   | 7.85.0 / 5.9.1           | Renders mínimos; el mismo schema valida y tipa                                                                                            |
+| Virtualización | **@tanstack/react-virtual**                       | 3.14.10                  | Memoria constante con miles de tarjetas                                                                                                   |
+| Iconos         | **lucide-react**                                  | 1.33.0                   | Ligero y con importación selectiva                                                                                                        |
+| Errores de UI  | **react-error-boundary**                          | 6.1.3                    | Un error de render no deja la pantalla en blanco                                                                                          |
+| Pruebas        | **Vitest** + **Testing Library** + **MSW**        | 4.1.11 / 16.3.2 / 2.15.0 | Dominio en unitarias, componentes por rol accesible, red simulada en el borde                                                             |
+| Calidad        | **ESLint** + **typescript-eslint** + **Prettier** | 10.8.1 / 8.67.0 / 3.9.6  | Cero advertencias toleradas                                                                                                               |
+| Gate           | **Husky** + **lint-staged** + `verify.sh`         | 9.1.7 / 17.3.0           | Un commit con un tipo `any` no entra                                                                                                      |
+| Paquetes       | **pnpm**                                          | 11.22.0                  | Instalación rápida y determinista                                                                                                         |
 
 **Opcionales, si hacen falta:** las devtools de TanStack Query (ver la caché en vivo vale un día de depuración), el plugin de ESLint para Query, el plugin de accesibilidad para JSX y `axe-core` para automatizar una parte del repaso de accesibilidad.
 
@@ -195,15 +195,15 @@ Si terminan el alcance base, vayan hacia **profundidad, no hacia funciones nueva
 
 El detalle operativo —comandos, archivos, orden exacto— está en la **Guía Técnica**. Esta es la vista de producto.
 
-| Día | Objetivo | Entregable demostrable |
-|---|---|---|
-| **1** | Cimientos y dominio | Proyecto creado, gate en verde, estados y políticas **con sus pruebas**, sin una sola pantalla |
-| **2** | Primer corte vertical | Explorar con datos reales, sus cuatro estados y los filtros en la URL |
-| **3** | Búsqueda y ficha | Ficha completa con las ausencias visibles como "sin dato", búsqueda con espera, imágenes en el tamaño correcto |
-| **4** | La biblioteca local | Guardar y quitar con vuelta atrás, y el almacenamiento validado al leer |
-| **5** | Listas y formularios | Crear y editar listas locales con formulario validado, con sus dos motivos de bloqueo |
-| **6** | Endurecer | Virtualización, accesibilidad, formatos por locale, cobertura |
-| **7** | Entregar | README, despliegue, repaso del checklist y ensayo del oral |
+| Día   | Objetivo              | Entregable demostrable                                                                                         |
+| ----- | --------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **1** | Cimientos y dominio   | Proyecto creado, gate en verde, estados y políticas **con sus pruebas**, sin una sola pantalla                 |
+| **2** | Primer corte vertical | Explorar con datos reales, sus cuatro estados y los filtros en la URL                                          |
+| **3** | Búsqueda y ficha      | Ficha completa con las ausencias visibles como "sin dato", búsqueda con espera, imágenes en el tamaño correcto |
+| **4** | La biblioteca local   | Guardar y quitar con vuelta atrás, y el almacenamiento validado al leer                                        |
+| **5** | Listas y formularios  | Crear y editar listas locales con formulario validado, con sus dos motivos de bloqueo                          |
+| **6** | Endurecer             | Virtualización, accesibilidad, formatos por locale, cobertura                                                  |
+| **7** | Entregar              | README, despliegue, repaso del checklist y ensayo del oral                                                     |
 
 **La regla del día 1 es la que más cuesta respetar y la que más rinde:** no se pinta nada hasta que el dominio esté modelado y probado. Un día "sin pantallas" se siente improductivo y es el que sostiene los otros seis. Los equipos que se lo saltan llegan al día 5 con la misma regla escrita en cuatro componentes distintos.
 
@@ -213,16 +213,16 @@ El detalle operativo —comandos, archivos, orden exacto— está en la **Guía 
 
 Se evalúa en tres momentos: **el repositorio** (código y commits), **la demo** (10 minutos en un navegador, con la red estrangulada a propósito) y **el oral** (preguntas al azar sobre su propio código). Un mismo trabajo puede sacar 9 en la demo y 3 en el oral: es el mismo esfuerzo mal repartido.
 
-| # | Dimensión | Peso | Qué se mira exactamente |
-|---|---|:--:|---|
-| 1 | **Arquitectura y límites** | 20% | La regla de dependencia se cumple y **el linter la impone**. Ningún componente conoce la librería HTTP. Los puertos existen y las pruebas usan dobles de esos puertos, no de librerías |
-| 2 | **Modelado del dominio y ausencias** | 15% | Uniones discriminadas donde hay estados; los `switch` cubiertos por el compilador; ningún `0` ni cadena vacía de TMDB sobrevive al borde; el dinero en enteros |
-| 3 | **Validación de los tres bordes** | 10% | Red, almacenamiento local y URL, los tres validados. Cero afirmaciones de tipo sin comprobar, cero `any`. Se prueba en vivo: se rompe una respuesta simulada y se mira qué hace la app |
-| 4 | **Datos remotos y caché** | 15% | Claves jerárquicas; filtros normalizados; frescura justificada por tipo de dato; mutación optimista con cancelación, vuelta atrás e invalidación **cruzada**; sin reintentos inútiles; paginación infinita que respeta el tope de la API |
-| 5 | **Formularios** | 10% | Un solo schema que valida y tipa; errores accesibles y en español; envío bloqueado mientras vuela; cada motivo de bloqueo con su propio mensaje, nunca un "no se puede" genérico |
-| 6 | **UI, cuatro estados y accesibilidad** | 15% | Los cuatro estados en **cada** vista con datos; navegación completa por teclado; foco visible; zoom al 200%; contraste suficiente; nada comunicado solo con color |
-| 7 | **Pruebas** | 10% | 100% en el dominio, 80% global. Pruebas que describen comportamiento, no implementación. Deterministas: reloj controlado, cero esperas reales. Un test que nunca falla no prueba nada |
-| 8 | **Proceso y entrega** | 5% | Gate en verde en el CI; commits pequeños; cero `--no-verify`; README que un extraño puede seguir; atribución a TMDB presente |
+| #   | Dimensión                              | Peso | Qué se mira exactamente                                                                                                                                                                                                                  |
+| --- | -------------------------------------- | :--: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Arquitectura y límites**             | 20%  | La regla de dependencia se cumple y **el linter la impone**. Ningún componente conoce la librería HTTP. Los puertos existen y las pruebas usan dobles de esos puertos, no de librerías                                                   |
+| 2   | **Modelado del dominio y ausencias**   | 15%  | Uniones discriminadas donde hay estados; los `switch` cubiertos por el compilador; ningún `0` ni cadena vacía de TMDB sobrevive al borde; el dinero en enteros                                                                           |
+| 3   | **Validación de los tres bordes**      | 10%  | Red, almacenamiento local y URL, los tres validados. Cero afirmaciones de tipo sin comprobar, cero `any`. Se prueba en vivo: se rompe una respuesta simulada y se mira qué hace la app                                                   |
+| 4   | **Datos remotos y caché**              | 15%  | Claves jerárquicas; filtros normalizados; frescura justificada por tipo de dato; mutación optimista con cancelación, vuelta atrás e invalidación **cruzada**; sin reintentos inútiles; paginación infinita que respeta el tope de la API |
+| 5   | **Formularios**                        | 10%  | Un solo schema que valida y tipa; errores accesibles y en español; envío bloqueado mientras vuela; cada motivo de bloqueo con su propio mensaje, nunca un "no se puede" genérico                                                         |
+| 6   | **UI, cuatro estados y accesibilidad** | 15%  | Los cuatro estados en **cada** vista con datos; navegación completa por teclado; foco visible; zoom al 200%; contraste suficiente; nada comunicado solo con color                                                                        |
+| 7   | **Pruebas**                            | 10%  | 100% en el dominio, 80% global. Pruebas que describen comportamiento, no implementación. Deterministas: reloj controlado, cero esperas reales. Un test que nunca falla no prueba nada                                                    |
+| 8   | **Proceso y entrega**                  |  5%  | Gate en verde en el CI; commits pequeños; cero `--no-verify`; README que un extraño puede seguir; atribución a TMDB presente                                                                                                             |
 
 **Escala por dimensión:** 4 cumple, está probado **y saben explicar la decisión y la alternativa que descartaron** · 3 cumple y está probado, con justificación superficial · 2 funciona en el camino feliz y se cae en un caso límite previsible · 1 presente pero mal aplicado (validar unos endpoints y otros no) · 0 ausente.
 
@@ -241,7 +241,7 @@ Da igual lo bonita que quede la app:
 
 ### Preguntas típicas del oral
 
-Que sirvan también de guía de estudio: *¿por qué se cancela lo que está en vuelo antes de una actualización optimista?* · *enséñenme la línea exacta donde un `0` de TMDB deja de significar cero* · *¿qué se rompe si el texto del buscador entra crudo en la clave de caché?* · *¿por qué la fecha actual entra por parámetro en la política y no se consulta dentro?* · *si mañana TMDB añade un estado nuevo, ¿qué archivo deja de compilar?* · *¿por qué el almacenamiento local se valida al leer, si lo escribió su propia app?* · *¿qué otras vistas muestran el dato que acaban de mutar?*
+Que sirvan también de guía de estudio: _¿por qué se cancela lo que está en vuelo antes de una actualización optimista?_ · _enséñenme la línea exacta donde un `0` de TMDB deja de significar cero_ · _¿qué se rompe si el texto del buscador entra crudo en la clave de caché?_ · _¿por qué la fecha actual entra por parámetro en la política y no se consulta dentro?_ · _si mañana TMDB añade un estado nuevo, ¿qué archivo deja de compilar?_ · _¿por qué el almacenamiento local se valida al leer, si lo escribió su propia app?_ · _¿qué otras vistas muestran el dato que acaban de mutar?_
 
 ---
 
@@ -320,4 +320,4 @@ Lo que se llevan no es la app: es el criterio para consumir cualquier API con ca
 
 ---
 
-*Este producto usa la API de TMDB pero no está avalado ni certificado por TMDB.*
+_Este producto usa la API de TMDB pero no está avalado ni certificado por TMDB._
