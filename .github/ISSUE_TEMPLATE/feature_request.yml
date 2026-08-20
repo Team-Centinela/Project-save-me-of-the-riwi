@@ -101,7 +101,7 @@ body:
         - P1 — High (next sprint)
         - P2 — Medium (this release)
         - P3 — Low (whenever)
-      validations:
+    validations:
       required: true
 
   - type: dropdown

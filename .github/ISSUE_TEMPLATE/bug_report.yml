@@ -77,7 +77,7 @@ body:
         - High (feature broken, no workaround)
         - Medium (feature broken, has workaround)
         - Low (cosmetic, minor inconvenience)
-      validations:
+    validations:
       required: true
 
   - type: input
