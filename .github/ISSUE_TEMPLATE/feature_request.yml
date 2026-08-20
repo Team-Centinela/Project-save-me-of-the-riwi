@@ -1,7 +1,7 @@
 name: Feature Request
 description: Suggest a new feature or enhancement for the backlog. Use this to propose user-facing functionality or improvements.
-title: "[Feature]: "
-labels: ["enhancement", "backlog"]
+title: '[Feature]: '
+labels: ['enhancement', 'backlog']
 type: feature
 body:
   - type: markdown

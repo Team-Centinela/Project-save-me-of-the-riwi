@@ -1,7 +1,7 @@
 name: Bug Report
 description: Report a bug to help us improve. Fill in the relevant details so we can reproduce and fix it.
-title: "[Bug]: "
-labels: ["bug", "triage"]
+title: '[Bug]: '
+labels: ['bug', 'triage']
 type: bug
 body:
   - type: markdown
@@ -34,7 +34,7 @@ body:
     attributes:
       label: Bug Summary
       description: A clear, concise description of what is broken.
-      placeholder: "When I click the save button on the movie card, nothing happens."
+      placeholder: 'When I click the save button on the movie card, nothing happens.'
     validations:
       required: true
 
@@ -85,7 +85,7 @@ body:
     attributes:
       label: Affected URL / Route
       description: Which page or route is affected?
-      placeholder: "/explore?genre=28"
+      placeholder: '/explore?genre=28'
     validations:
       required: false
 
@@ -94,7 +94,7 @@ body:
     attributes:
       label: Component / Module
       description: Which component or module is affected, if you know?
-      placeholder: "MovieCard, useLibrary, httpClient, etc."
+      placeholder: 'MovieCard, useLibrary, httpClient, etc.'
     validations:
       required: false
 

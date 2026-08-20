@@ -22,14 +22,14 @@ Cineteca is a client-side web app that consumes [TMDB](https://www.themoviedb.or
 
 ## Screens
 
-| Route                          | Purpose                                                                                       |
-| ------------------------------ | --------------------------------------------------------------------------------------------- |
-| `/`                            | Trending this week                                                                            |
-| `/explore`                     | Filters + results; filters live in the URL                                                    |
-| `/search`                      | Free-text search with debounce                                                                 |
-| `/movie/:id`                   | Full detail page, shareable URL                                                                |
-| `/my-cineteca`                 | Saved films and local lists                                                                    |
-| `/my-cineteca/lists/:slug`     | A single local list, viewable and shareable                                                    |
+| Route                      | Purpose                                     |
+| -------------------------- | ------------------------------------------- |
+| `/`                        | Trending this week                          |
+| `/explore`                 | Filters + results; filters live in the URL  |
+| `/search`                  | Free-text search with debounce              |
+| `/movie/:id`               | Full detail page, shareable URL             |
+| `/my-cineteca`             | Saved films and local lists                 |
+| `/my-cineteca/lists/:slug` | A single local list, viewable and shareable |
 
 ---
 
@@ -57,7 +57,7 @@ pnpm dev              # http://localhost:5173
 ### Getting a TMDB token
 
 1. Create a **practice account** at [themoviedb.org](https://www.themoviedb.org) (not a personal one).
-2. Go to *Settings → API* and request access. Declare it as an educational, non-commercial project.
+2. Go to _Settings → API_ and request access. Declare it as an educational, non-commercial project.
 3. Copy the **API Read Access Token** (the second credential).
 
 > The token is shipped inside the client bundle and is therefore public. That is acceptable here precisely because it is read-only, scoped to a practice account, and rotable in one minute from the same panel.
@@ -66,18 +66,18 @@ pnpm dev              # http://localhost:5173
 
 ## Scripts
 
-| Command                              | What it does                                              |
-| ------------------------------------ | --------------------------------------------------------- |
-| `pnpm dev`                           | Start the dev server                                      |
-| `pnpm build`                         | Production build                                          |
-| `pnpm preview`                       | Preview the production build                              |
-| `pnpm test`                          | Run tests with coverage                                   |
-| `pnpm test:watch`                    | Run tests in watch mode                                   |
-| `pnpm lint`                          | Run ESLint (zero warnings tolerated)                      |
-| `pnpm check-types`                   | Run TypeScript type checking                              |
-| `pnpm format`                        | Format code with Prettier                                 |
-| `bash scripts/verify.sh --quick`     | Pre-commit gate: format, lint, types                      |
-| `bash scripts/verify.sh --full`      | Pre-push and CI gate: above plus tests, build, deps check |
+| Command                          | What it does                                              |
+| -------------------------------- | --------------------------------------------------------- |
+| `pnpm dev`                       | Start the dev server                                      |
+| `pnpm build`                     | Production build                                          |
+| `pnpm preview`                   | Preview the production build                              |
+| `pnpm test`                      | Run tests with coverage                                   |
+| `pnpm test:watch`                | Run tests in watch mode                                   |
+| `pnpm lint`                      | Run ESLint (zero warnings tolerated)                      |
+| `pnpm check-types`               | Run TypeScript type checking                              |
+| `pnpm format`                    | Format code with Prettier                                 |
+| `bash scripts/verify.sh --quick` | Pre-commit gate: format, lint, types                      |
+| `bash scripts/verify.sh --full`  | Pre-push and CI gate: above plus tests, build, deps check |
 
 ---
 
@@ -103,22 +103,22 @@ src/
 
 A versioned table lives in [`docs/tech-stack.md`](./docs/tech-stack.md). The summary:
 
-| Layer        | Tool                                                              |
-| ------------ | ----------------------------------------------------------------- |
-| Build        | Vite                                                              |
-| Language     | TypeScript (strict)                                               |
-| UI           | React                                                             |
-| Routing      | React Router                                                      |
-| Styles       | Tailwind CSS                                                      |
-| Data         | TanStack Query                                                    |
-| HTTP         | Axios (one instance, one place)                                   |
-| Validation   | Zod                                                               |
-| Forms        | React Hook Form + Zod resolver                                    |
-| Virtualization | `@tanstack/react-virtual`                                       |
-| Testing      | Vitest + Testing Library + MSW + axe-core                         |
-| Quality      | ESLint + typescript-eslint + Prettier                             |
-| Gate         | Husky + lint-staged + `verify.sh`                                 |
-| Package mgr  | pnpm                                                              |
+| Layer          | Tool                                      |
+| -------------- | ----------------------------------------- |
+| Build          | Vite                                      |
+| Language       | TypeScript (strict)                       |
+| UI             | React                                     |
+| Routing        | React Router                              |
+| Styles         | Tailwind CSS                              |
+| Data           | TanStack Query                            |
+| HTTP           | Axios (one instance, one place)           |
+| Validation     | Zod                                       |
+| Forms          | React Hook Form + Zod resolver            |
+| Virtualization | `@tanstack/react-virtual`                 |
+| Testing        | Vitest + Testing Library + MSW + axe-core |
+| Quality        | ESLint + typescript-eslint + Prettier     |
+| Gate           | Husky + lint-staged + `verify.sh`         |
+| Package mgr    | pnpm                                      |
 
 The intentional exclusions are documented in [`docs/tech-stack.md`](./docs/tech-stack.md): no Redux, no Zustand, no Jotai. Server state lives in the Query cache, view state lives in the URL, the library lives in its own validated module.
 

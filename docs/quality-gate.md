@@ -2,7 +2,7 @@
 
 Nothing reaches `main` or `develop` without the gate running green. The gate is the **same script** locally and in CI: `scripts/verify.sh`. That single fact — local and CI cannot diverge — is the point of the whole quality system.
 
-The gate protects *what* lands in the repo. *How* it lands — which merge strategy per branch — is in [`CONTRIBUTING.md`](../CONTRIBUTING.md#merge-strategy--hybrid-on-purpose).
+The gate protects _what_ lands in the repo. _How_ it lands — which merge strategy per branch — is in [`CONTRIBUTING.md`](../CONTRIBUTING.md#merge-strategy--hybrid-on-purpose).
 
 ---
 
@@ -27,10 +27,10 @@ Skipping a step or weakening it "to make it pass" is treated as a process failur
 
 `verify.sh` takes one argument: `--quick` or `--full`.
 
-| Mode       | Steps                                                | Used by                                | Target time |
-| ---------- | ---------------------------------------------------- | -------------------------------------- | ----------- |
-| `--quick`  | format → lint → types                                | `.husky/pre-commit`                    | < 10 s      |
-| `--full`   | format → lint → types → tests → build → dependencies | `.husky/pre-push`, `.github/workflows/ci.yml` | < 90 s   |
+| Mode      | Steps                                                | Used by                                       | Target time |
+| --------- | ---------------------------------------------------- | --------------------------------------------- | ----------- |
+| `--quick` | format → lint → types                                | `.husky/pre-commit`                           | < 10 s      |
+| `--full`  | format → lint → types → tests → build → dependencies | `.husky/pre-push`, `.github/workflows/ci.yml` | < 90 s      |
 
 If either mode grows beyond its budget, **fix the cause**, do not remove steps. A slow gate becomes `--no-verify` on a Friday night and then it stops being a gate.
 

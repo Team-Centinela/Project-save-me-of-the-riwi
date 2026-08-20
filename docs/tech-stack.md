@@ -6,25 +6,25 @@ The versioned stack that Cineteca runs on, with the rationale for each choice. V
 
 ## Stack overview
 
-| Layer            | Tool                                                  | Used for                                              |
-| ---------------- | ----------------------------------------------------- | ----------------------------------------------------- |
-| Build            | **Vite**                                              | Dev server, HMR, production build                    |
-| Language         | **TypeScript** (strict)                               | Static types across the codebase                      |
-| UI               | **React**                                             | Component model                                       |
-| Routing          | **React Router**                                      | Nested routes, URL-as-state, route-level code splitting |
-| Styles           | **Tailwind CSS**                                      | Utility-first CSS with design tokens in the CSS file |
-| Variant utilities | **cva** + **tailwind-merge** + **clsx**              | Typed variants, conflict-free class composition      |
-| Server state     | **TanStack Query**                                    | Cache, revalidation, infinite pagination, mutations   |
-| HTTP             | **Axios**                                             | One instance, interceptors, cancellation             |
-| Validation       | **Zod**                                               | Schemas as types — network, storage, URL, forms      |
-| Forms            | **React Hook Form** + **`@hookform/resolvers`**       | Minimal re-renders; Zod schema validates and types    |
-| Virtualization   | **`@tanstack/react-virtual`**                         | Constant memory with thousands of cards               |
-| Icons            | **lucide-react**                                      | Tree-shakable, selectively imported icons             |
-| UI error boundary| **react-error-boundary**                              | A render error cannot blank the screen               |
-| Testing          | **Vitest** + **Testing Library** + **MSW** + **axe-core** | Unit, component, network, accessibility tests     |
-| Quality          | **ESLint** + **typescript-eslint** + **Prettier**     | Linting, type-aware rules, formatting                 |
-| Gate             | **Husky** + **lint-staged** + `scripts/verify.sh`     | Quality gate on every commit and push                 |
-| Package manager  | **pnpm**                                              | Fast, deterministic installs                         |
+| Layer             | Tool                                                      | Used for                                                |
+| ----------------- | --------------------------------------------------------- | ------------------------------------------------------- |
+| Build             | **Vite**                                                  | Dev server, HMR, production build                       |
+| Language          | **TypeScript** (strict)                                   | Static types across the codebase                        |
+| UI                | **React**                                                 | Component model                                         |
+| Routing           | **React Router**                                          | Nested routes, URL-as-state, route-level code splitting |
+| Styles            | **Tailwind CSS**                                          | Utility-first CSS with design tokens in the CSS file    |
+| Variant utilities | **cva** + **tailwind-merge** + **clsx**                   | Typed variants, conflict-free class composition         |
+| Server state      | **TanStack Query**                                        | Cache, revalidation, infinite pagination, mutations     |
+| HTTP              | **Axios**                                                 | One instance, interceptors, cancellation                |
+| Validation        | **Zod**                                                   | Schemas as types — network, storage, URL, forms         |
+| Forms             | **React Hook Form** + **`@hookform/resolvers`**           | Minimal re-renders; Zod schema validates and types      |
+| Virtualization    | **`@tanstack/react-virtual`**                             | Constant memory with thousands of cards                 |
+| Icons             | **lucide-react**                                          | Tree-shakable, selectively imported icons               |
+| UI error boundary | **react-error-boundary**                                  | A render error cannot blank the screen                  |
+| Testing           | **Vitest** + **Testing Library** + **MSW** + **axe-core** | Unit, component, network, accessibility tests           |
+| Quality           | **ESLint** + **typescript-eslint** + **Prettier**         | Linting, type-aware rules, formatting                   |
+| Gate              | **Husky** + **lint-staged** + `scripts/verify.sh`         | Quality gate on every commit and push                   |
+| Package manager   | **pnpm**                                                  | Fast, deterministic installs                            |
 
 ---
 

@@ -18,13 +18,13 @@ src/
 └── test/             MSW server for testing
 ```
 
-| Layer            | Responsibility                                                                  | Allowed imports                                          | Forbidden imports                                                |
-| ---------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------- |
-| `domain/`        | Business entities, rules, and formatters                                        | other `domain/` modules                                  | React, Axios, TanStack Query, anything from `application/`, `infrastructure/`, `presentation/` |
-| `application/`   | Use cases; ports (interfaces) that the infrastructure must implement            | `domain/`                                                | React, Axios, anything from `presentation/` or `infrastructure/` |
-| `infrastructure/` | Implementations of the ports: HTTP calls with validation, storage adapter      | `domain/`, `application/`, axios (only in `http/`)       | React, anything from `presentation/`                             |
-| `presentation/`  | React UI, routes, hooks, providers, copy                                         | everything below it                                      | —                                                                |
-| `infrastructure/http/` | The single place that imports `axios`                                       | axios                                                     | anywhere else that imports axios                                  |
+| Layer                  | Responsibility                                                            | Allowed imports                                    | Forbidden imports                                                                              |
+| ---------------------- | ------------------------------------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `domain/`              | Business entities, rules, and formatters                                  | other `domain/` modules                            | React, Axios, TanStack Query, anything from `application/`, `infrastructure/`, `presentation/` |
+| `application/`         | Use cases; ports (interfaces) that the infrastructure must implement      | `domain/`                                          | React, Axios, anything from `presentation/` or `infrastructure/`                               |
+| `infrastructure/`      | Implementations of the ports: HTTP calls with validation, storage adapter | `domain/`, `application/`, axios (only in `http/`) | React, anything from `presentation/`                                                           |
+| `presentation/`        | React UI, routes, hooks, providers, copy                                  | everything below it                                | —                                                                                              |
+| `infrastructure/http/` | The single place that imports `axios`                                     | axios                                              | anywhere else that imports axios                                                               |
 
 The **single-source rule for the HTTP library** is the most concrete. `axios` is allowed in exactly one directory tree, `src/infrastructure/http/**`. The linter rejects the import anywhere else. This keeps the transport replaceable and makes the network edge easy to find.
 
@@ -34,16 +34,16 @@ The **single-source rule for the HTTP library** is the most concrete. `axios` is
 
 The question that comes up every day is "where does this file live?". Use this table:
 
-| What you are writing                                                   | Goes in                          |
-| ---------------------------------------------------------------------- | -------------------------------- |
-| A business rule, entity, state, formatter, schema, policy              | `domain/`                        |
-| An interface for "something that fetches X" or "something that stores Y" | `application/ports/`           |
-| A network call with its validation                                     | `infrastructure/api/`            |
-| The HTTP client and its interceptors                                   | `infrastructure/http/`           |
-| The browser storage adapter                                            | `infrastructure/storage/`        |
-| A React component, route, hook, provider                               | `presentation/`                  |
-| A user-visible string                                                  | `presentation/copy/`             |
-| Environment validation                                                 | `config/`                        |
+| What you are writing                                                     | Goes in                   |
+| ------------------------------------------------------------------------ | ------------------------- |
+| A business rule, entity, state, formatter, schema, policy                | `domain/`                 |
+| An interface for "something that fetches X" or "something that stores Y" | `application/ports/`      |
+| A network call with its validation                                       | `infrastructure/api/`     |
+| The HTTP client and its interceptors                                     | `infrastructure/http/`    |
+| The browser storage adapter                                              | `infrastructure/storage/` |
+| A React component, route, hook, provider                                 | `presentation/`           |
+| A user-visible string                                                    | `presentation/copy/`      |
+| Environment validation                                                   | `config/`                 |
 
 **Rule of thumb:** if a file in `domain/` would need to install something to work, it is in the wrong folder.
 
@@ -135,12 +135,12 @@ The URL edge is the one most apps forget. Cineteca treats it like the other two.
 
 Any screen that shows data has four paths:
 
-| State            | What it shows                                                              |
-| ---------------- | -------------------------------------------------------------------------- |
-| **Loading**      | A skeleton with the real shape of the upcoming content, not a centered spinner |
-| **Error**        | Plain language and a retry button. "We could not load the movies," not "Error 500" |
-| **Empty initial** | "Your Cineteca is empty," with a link to explore                          |
-| **Empty by filter** | "No movies match these filters," with a button to clear them            |
+| State               | What it shows                                                                      |
+| ------------------- | ---------------------------------------------------------------------------------- |
+| **Loading**         | A skeleton with the real shape of the upcoming content, not a centered spinner     |
+| **Error**           | Plain language and a retry button. "We could not load the movies," not "Error 500" |
+| **Empty initial**   | "Your Cineteca is empty," with a link to explore                                   |
+| **Empty by filter** | "No movies match these filters," with a button to clear them                       |
 
 A filter mismatch is not a dead end — it is a screen with a single action that recovers it.
 
