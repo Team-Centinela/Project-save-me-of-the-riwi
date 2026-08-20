@@ -1,8 +1,10 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { RouterProvider } from 'react-router';
 import { env } from './config/env';
+import { AppProviders } from './presentation/providers/app-providers';
+import { router } from './presentation/routes/router';
 import './index.css';
-import App from './App.tsx';
 
 if (import.meta.env.DEV) {
   console.warn(`[cineteca] env validated against ${env.VITE_TMDB_API_BASE}`);
@@ -13,6 +15,8 @@ if (!rootElement) throw new Error('Root element #root not found.');
 
 createRoot(rootElement).render(
   <StrictMode>
-    <App />
+    <AppProviders>
+      <RouterProvider router={router} />
+    </AppProviders>
   </StrictMode>,
 );
