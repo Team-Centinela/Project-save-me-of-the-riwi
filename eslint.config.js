@@ -1,8 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated --
- * `tseslint.config()` is the canonical entry point in typescript-eslint 8.67.
- * The migration target is `defineConfig()` from eslint core, but eslint 10.8.1
- * does not yet export it. Revisit when eslint ^10.x ships defineConfig.
- */
 import js from '@eslint/js';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
@@ -11,17 +6,21 @@ import jsxA11y from 'eslint-plugin-jsx-a11y';
 import query from '@tanstack/eslint-plugin-query';
 import prettier from 'eslint-config-prettier';
 
+// eslint-disable-next-line @typescript-eslint/no-deprecated --
+// `tseslint.config()` is the canonical entry point in typescript-eslint 8.67.
+// The migration target is `defineConfig()` from eslint core, but eslint 10.8.1
+// does not yet export it. Revisit when eslint ^10.x ships defineConfig.
 export default tseslint.config(
-  // ── Ignores ──────────────────────────────────────────────────────────
+  // ── Ignores ───────────────────────────────────────────────────────────
   { ignores: ['dist', 'coverage', '*.config.{js,mjs,cjs}', 'eslint.config.js'] },
 
-  // ── Base, sin chequeo de tipos (aplica a .js y .ts) ─────────────────
+  // ── Base, no type checking (applies to .js and .ts) ──────────────────
   js.configs.recommended,
   reactHooks.configs.flat.recommended,
   jsxA11y.flatConfigs.recommended,
   query.configs['flat/recommended'],
 
-  // ── Chequeo estricto de tipos, solo para src/ ─────────────────────────
+  // ── Strict type checking, scoped to src/ ──────────────────────────────
   {
     files: ['src/**/*.{ts,tsx}'],
     extends: [tseslint.configs.strictTypeChecked, tseslint.configs.stylisticTypeChecked],
@@ -38,10 +37,17 @@ export default tseslint.config(
     },
   },
 
-  // ── Regla de axios, catch-all en src/ ─────────────────────────────────
-  // Aparece ANTES que las reglas de domain/application porque flat config
-  // resuelve conflictos de la misma regla por ORDEN (no por especificidad
-  // del glob). Las reglas más específicas debajo sobreescriben esta.
+  // ── Axios rule, catch-all across src/ ─────────────────────────────────
+  // NOTE: flat config MERGES configs at the rule level — it does NOT replace
+  // them. For `src/domain/**`, the effective `no-restricted-imports` rule
+  // ends up with both `paths: [axios]` (from this catch-all) and `patterns:
+  // [...]` (from the domain block below). ESLint reports the first match;
+  // empirically patterns fires first when both could match, so:
+  //   - `import 'axios'` in domain     → "Domain does not depend on frameworks." (patterns)
+  //   - `import 'react'` in domain     → "Domain does not depend on frameworks." (patterns)
+  //   - `import 'axios'` in src/other  → "Only src/infrastructure/http may…" (paths only)
+  // The domain/application blocks below add their `patterns` on top of this
+  // catch-all for the files they match.
   {
     files: ['src/**/*.{ts,tsx}'],
     ignores: ['src/infrastructure/http/**'],
@@ -52,7 +58,7 @@ export default tseslint.config(
           paths: [
             {
               name: 'axios',
-              message: 'Solo src/infrastructure/http puede importar axios.',
+              message: 'Only src/infrastructure/http may import axios.',
             },
           ],
         },
@@ -60,12 +66,10 @@ export default tseslint.config(
     },
   },
 
-  // ── LA REGLA DE DEPENDENCIA ───────────────────────────────────────────
-  // El dominio es TypeScript puro: no conoce React, ni la librería HTTP, ni
-  // la caché, ni las capas de fuera. Eso es lo que lo vuelve testeable sin
-  // un solo doble de prueba.
-  // NOTA: el orden importa — este bloque va DESPUÉS del catch-all de axios
-  // para que su `no-restricted-imports` lo sobreescriba en src/domain/**.
+  // ── THE DEPENDENCY RULE ───────────────────────────────────────────────
+  // The domain is pure TypeScript: it does not know React, the HTTP
+  // library, the cache, or any outer layer. That is what makes it
+  // testable without a single test double.
   {
     files: ['src/domain/**/*.ts'],
     rules: {
@@ -75,11 +79,11 @@ export default tseslint.config(
           patterns: [
             {
               group: ['react', 'react-*', 'axios', '@tanstack/*', 'react-hook-form'],
-              message: 'El dominio no depende de frameworks.',
+              message: 'Domain does not depend on frameworks.',
             },
             {
               group: ['@/presentation/*', '@/infrastructure/*', '@/application/*'],
-              message: 'Las dependencias apuntan hacia dentro.',
+              message: 'Dependencies point inward.',
             },
           ],
         },
@@ -96,11 +100,11 @@ export default tseslint.config(
             {
               group: ['@/presentation/*', '@/infrastructure/*'],
               message:
-                'La aplicación define interfaces; la infraestructura las implementa, no al revés.',
+                'Application defines interfaces; infrastructure implements them, not the other way around.',
             },
             {
               group: ['axios', 'react', 'react-*'],
-              message: 'La aplicación no sabe cómo viajan los datos.',
+              message: 'Application does not know how the data travels.',
             },
           ],
         },
@@ -108,6 +112,7 @@ export default tseslint.config(
     },
   },
 
+  // See PR #6 (Vitest config) — spec files will land there.
   { files: ['**/*.spec.{ts,tsx}'], rules: { '@typescript-eslint/no-non-null-assertion': 'off' } },
-  prettier, // último siempre: apaga lo que Prettier decide
+  prettier, // always last: turns off whatever Prettier decides
 );
