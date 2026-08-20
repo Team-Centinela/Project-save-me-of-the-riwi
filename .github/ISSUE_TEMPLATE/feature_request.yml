@@ -1,0 +1,135 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for the backlog. Use this to propose user-facing functionality or improvements.
+title: "[Feature]: "
+labels: ["enhancement", "backlog"]
+type: feature
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to propose a new feature or product enhancement. For technical/internal work (refactors, tooling, dep upgrades), use the **Chore / Tech Debt** template instead.
+
+  - type: checkboxes
+    id: existing-issue
+    attributes:
+      label: Checklist
+      description: Please confirm the following before submitting.
+      options:
+        - label: I have searched the existing issues and feature requests
+          required: true
+        - label: I have discussed this with the team and it aligns with the project goals
+          required: false
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this solve? What user pain point does it address? Frame it as "users need to..." or "users struggle to..."
+      placeholder: |
+        Users currently can't share their curated library with friends because there is no way to
+        generate a public link. They take screenshots of the list and send them manually.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: A clear description of what you want to happen. Screenshots, mockups, or links to similar features in other apps are very helpful.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: What other approaches did you consider? What are the trade-offs?
+    validations:
+      required: false
+
+  - type: textarea
+    id: user-story
+    attributes:
+      label: User Story
+      description: As a [type of user], I want to [action], so that [benefit].
+      placeholder: |
+        As a cinephile who builds themed lists,
+        I want to share a list with a single link,
+        so that my friends can see what I'd recommend without signing up.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: A checklist of observable behaviors that prove the feature works. Use the format `- [ ]`.
+      placeholder: |
+        - [ ] User can click "Share" on a list and get a URL
+        - [ ] The URL opens the same list in any browser without auth
+        - [ ] The list shows the same title and order to the recipient
+        - [ ] Empty list gracefully shows an empty state
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected Area
+      description: Which part of the app does this touch?
+      multiple: true
+      options:
+        - UI / Presentation
+        - Routing / Navigation
+        - Domain / Business logic
+        - API / Data layer
+        - State / Caching
+        - Storage / Persistence
+        - Accessibility
+        - Performance
+        - Tests
+        - Tooling / Builds
+        - Documentation
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this for the roadmap?
+      options:
+        - P0 — Critical (blocks release)
+        - P1 — High (next sprint)
+        - P2 — Medium (this release)
+        - P3 — Low (whenever)
+      validations:
+      required: true
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Estimated Effort
+      description: Rough size estimate (T-shirt sizing).
+      options:
+        - S — Small (< 1 day)
+        - M — Medium (1-3 days)
+        - L — Large (1 week)
+        - XL — Too big, needs to be broken down
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies / Related Issues
+      description: Does this depend on something else? Block another issue? Link related work.
+      placeholder: |
+        - Depends on #45 (share URL schema)
+        - Blocks #78 (social preview cards)
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes
+      description: Mockups, screenshots, references, edge cases, or anything else relevant.
+    validations:
+      required: false

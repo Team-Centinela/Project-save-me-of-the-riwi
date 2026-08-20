@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Discussions
+    url: https://github.com/Team-Centinela/Project-save-me-of-the-riwi/discussions
+    about: General questions, ideas, and community conversation go here.
+  - name: Security Issue
+    url: https://github.com/Team-Centinela/Project-save-me-of-the-riwi/security/advisories/new
+    about: Report a security vulnerability privately. Please do not open a public issue for security.
+  - name: Cineteca Project Guide
+    url: https://github.com/Team-Centinela/Project-save-me-of-the-riwi/blob/main/Cineteca.md
+    about: Read the full project specification and evaluation criteria before opening an issue.

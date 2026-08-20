@@ -1,0 +1,101 @@
+name: Chore / Tech Debt
+description: Track internal work — refactors, tooling, dependency upgrades, documentation, or any non-user-facing change.
+title: "[Chore]: "
+labels: ["chore"]
+type: task
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for internal work that doesn't directly deliver user value but keeps the project healthy: refactors, dependency upgrades, tooling, CI, docs, performance work, etc.
+
+  - type: checkboxes
+    id: existing-issue
+    attributes:
+      label: Checklist
+      description: Please confirm the following before submitting.
+      options:
+        - label: I have searched the existing issues
+          required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What type of work is this?
+      options:
+        - Refactor (improve structure without changing behavior)
+        - Dependency upgrade (new version of a package)
+        - Tooling / Build / CI
+        - Documentation
+        - Performance improvement
+        - Test coverage / Quality
+        - Accessibility hardening
+        - Security
+      validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why is this needed? What's the current pain?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Approach
+      description: How do you plan to do this? Steps, libraries, configs.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Definition of Done
+      description: What proves the work is complete? Use the format `- [ ]`.
+      placeholder: |
+        - [ ] Make the change
+        - [ ] All tests pass
+        - [ ] Coverage maintained or improved
+        - [ ] No linter warnings
+        - [ ] CI gate green
+        - [ ] No breaking changes (or documented in CHANGELOG)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Risk Level
+      description: How risky is this change?
+      options:
+        - Low (isolated, easy to revert)
+        - Medium (touches shared code, needs review)
+        - High (cross-cutting, breaking, or hard to revert)
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected Area
+      description: Which part of the codebase? Pick the most relevant layers.
+      multiple: true
+      options:
+        - domain/
+        - application/
+        - infrastructure/
+        - presentation/
+        - config/
+        - test/
+        - tooling (scripts, CI, linters)
+        - docs
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes
+      description: Links, references, related issues, alternative approaches considered.
+    validations:
+      required: false
