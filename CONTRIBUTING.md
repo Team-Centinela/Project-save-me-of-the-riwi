@@ -336,4 +336,16 @@ The full project and baseline guides are mirrored inside this repo so they are a
 
 If a local copy and the upstream gist ever diverge, the gist is canonical.
 
+### Agent skills
+
+AI agents contributing to this repository **must** load the [`react-typescript-modern`](./.agents/skills/react-typescript-modern/SKILL.md) skill before writing, reviewing, or refactoring any React or TypeScript code. The skill is calibrated to the versions pinned in `package.json` and to the layered architecture the linter enforces, and exists to prevent stale patterns from training data (class components, `PropTypes`, `react-router-dom`, query-level `onSuccess`, hand-rolled `useEffect` fetches) from leaking into new code.
+
+- **Skill index** — [`.agents/skills/react-typescript-modern/SKILL.md`](./.agents/skills/react-typescript-modern/SKILL.md)
+- **Reference: React fundamentals** — [`.agents/skills/react-typescript-modern/references/react-fundamentals.md`](./.agents/skills/react-typescript-modern/references/react-fundamentals.md)
+- **Reference: Data fetching (TanStack Query)** — [`.agents/skills/react-typescript-modern/references/data-fetching-react-query.md`](./.agents/skills/react-typescript-modern/references/data-fetching-react-query.md)
+- **Reference: Routing (React Router)** — [`.agents/skills/react-typescript-modern/references/routing-react-router.md`](./.agents/skills/react-typescript-modern/references/routing-react-router.md)
+- **Reference: Project setup & architecture** — [`.agents/skills/react-typescript-modern/references/project-setup.md`](./.agents/skills/react-typescript-modern/references/project-setup.md)
+
+The general-purpose skill folder at `.agents/skills/` is the home for any agent-facing guidance in this repository. New skills should follow the same layout (`SKILL.md` at the root, optional `references/` for drill-down material) and be added here.
+
 > _This product uses the API of TMDB but is not endorsed or certified by TMDB._

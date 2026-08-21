@@ -1,0 +1,78 @@
+---
+name: react-typescript-modern
+description: Use this for ANY React work in Cineteca — writing, reviewing, or refactoring components, hooks, routes, forms, or data-fetching code under `src/presentation/`; or answering "how do I do X in React" questions in this codebase. Enforces the actual versions pinned in `package.json` (React 19.2.8, React Router 8.3.0, TanStack Query 5.101.4, TypeScript 6.0.3, Vite 8.2.1) and the Clean Architecture dependency rule enforced by ESLint. Prevents the stale patterns that dominate training data (class components, `PropTypes`, `react-router-dom`, query-level `onSuccess`, hand-rolled `useEffect` fetches) from leaking into new code. Trigger this on every `.tsx` file, every "add a component/hook/route/query", and every React code review in this repo — even when the user does not mention "modern" or "latest".
+---
+
+# React + TypeScript — Cineteca's actual stack
+
+## Why this skill exists
+
+Training data has a long tail. Class components, `PropTypes`, `react-router-dom`, and query-level `onSuccess` were all correct answers for years, so they show up constantly in generated code even now that each one has been removed or replaced. In Cineteca this is more dangerous than usual because the linter enforces a **layered architecture** — a stale pattern in `src/presentation/` is not just stylistic, it can break the dependency rule (`react`, `axios`, `@tanstack/*` are forbidden inside `src/domain/`).
+
+This skill is calibrated to the versions pinned in `package.json`. Treat that file as the source of truth — if you ever propose a change that requires a different major, flag it instead of silently drifting.
+
+## Ground rule: this skill is Cineteca-specific
+
+The team's [Project Guide](https://gist.github.com/xXAreizaXx/16cb8c169ab015adb0be35fac4992863) and [Baseline Guide](https://gist.github.com/xXAreizaXx/8566c4410fe16fab5864abb72ae55e4a) define what the app is and how it is scaffolded. Read them once before doing non-trivial work — they explain the three untrusted edges (network, localStorage, URL), the domain/application/infrastructure/presentation split, and why certain choices (TypeScript 6 instead of 7, `react-router` instead of `react-router-dom`, Vite 8 instead of CRA) are non-negotiable.
+
+When something this skill says and something in `package.json` / `eslint.config.js` / the docs disagree, **trust the repo** — the registry moves, the pins do not without a deliberate upgrade.
+
+## Current baseline for Cineteca
+
+Versions verified against `package.json` at the time of writing. Re-check before bumping — `./scripts/check-versions.sh` exists for this.
+
+| Package                                   | Pinned in Cineteca  | What changed from the "textbook" version                                                                                                                                              |
+| ----------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `react` / `react-dom`                     | `^19.2.8`           | Actions, `use()`, ref-as-prop, React Compiler 1.0                                                                                                                                     |
+| `react-router`                            | `8.3.0`             | `react-router-dom` is retired — everything ships from `react-router` (+ `react-router/dom` for browser entry points); ESM-only; middleware stable by default                          |
+| `@tanstack/react-query`                   | `5.101.4`           | Package renamed from `react-query`; `queryOptions()`, `gcTime`, no more query-level `onSuccess`/`onError`                                                                             |
+| `typescript`                              | `~6.0.2`            | **Not 7.** `typescript-eslint@8.67.0` only supports `typescript >=4.8.4 <6.1.0`. The linter is what enforces the architecture, so the compiler stays on the line the linter supports. |
+| `vite`                                    | `^8.2.0`            | The standard scaffold — Create React App is dead, do not suggest it                                                                                                                   |
+| `tailwindcss`                             | `4.3.3`             | CSS-first — no `tailwind.config.js`, tokens live in `@theme {}` inside `src/index.css`                                                                                                |
+| `zod`                                     | `4.4.3`             | Schemas are the types; validates the three untrusted edges (network, localStorage, URL)                                                                                               |
+| `react-hook-form` + `@hookform/resolvers` | `7.85.0` + `5.9.1`  | Resolvers **must** be 5+ to talk to Zod 4                                                                                                                                             |
+| `axios`                                   | `1.19.0`            | A single instance, interceptors, cancellation. Imports are restricted to `src/infrastructure/http/**` by the linter                                                                   |
+| `vitest` + `@testing-library/react`       | `4.1.11` + `16.3.2` | Tests query by accessible role and name, not by class or test id                                                                                                                      |
+| `node`                                    | `>=22` (LTS)        | Floor required by React Router v8                                                                                                                                                     |
+
+## The trap: things that look idiomatic but are gone or replaced in Cineteca
+
+Several of these throw at build time or runtime on a current install — they are not stylistic nitpicks.
+
+| Instead of this                                                                    | Write this                                                                                     | Why                                                                                                                           |
+| ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `class Foo extends React.Component` for new code                                   | Function component + hooks                                                                     | Hooks have been the default for years; class lifecycle methods are the main thing still tripping up generated code            |
+| `Foo.propTypes = {...}`                                                            | A TypeScript `type`/`interface` for props                                                      | `propTypes` is silently ignored in React 19 — it does nothing                                                                 |
+| `Foo.defaultProps = {...}` on a function component                                 | ES6 default parameters: `function Foo({ size = 100 }: Props)`                                  | Removed in React 19 for function components                                                                                   |
+| `ReactDOM.render(<App />, el)`                                                     | `createRoot(el).render(<App />)`                                                               | `ReactDOM.render`/`hydrate` were removed in React 19                                                                          |
+| String refs (`ref="myRef"`)                                                        | `useRef()` or a callback ref                                                                   | Removed in React 19                                                                                                           |
+| `forwardRef((props, ref) => ...)` for new components                               | Accept `ref` as an ordinary prop                                                               | `forwardRef` still works but is on a deprecation path — see `references/react-fundamentals.md`                                |
+| `import { BrowserRouter } from 'react-router-dom'`                                 | `import { BrowserRouter } from 'react-router/dom'` (and everything else from `'react-router'`) | The `react-router-dom` package no longer exists in v8                                                                         |
+| `<Switch>` / `useHistory()`                                                        | `<Routes>` / `useNavigate()`                                                                   | React Router v5 muscle memory — gone for years, keeps surfacing                                                               |
+| `useQuery({ queryFn, onSuccess, onError })`                                        | Handle the result where you call the hook, or use `QueryCache` global callbacks                | Query-level callbacks were removed in TanStack Query v5 (mutations kept theirs)                                               |
+| `cacheTime`                                                                        | `gcTime`                                                                                       | Renamed in v5                                                                                                                 |
+| Fetching data with a bare `useEffect` + `useState`                                 | `useQuery`/`useSuspenseQuery`, or a route `loader`                                             | Manual effect-fetching reintroduces race conditions and cache bugs that both libraries already solved                         |
+| Importing `axios` from anywhere outside `src/infrastructure/http/**`               | Move the call into a `infrastructure/api/<resource>/` module and expose a port                 | The linter (`no-restricted-imports`) rejects `axios` imports anywhere else — this is not a suggestion, it is the architecture |
+| Importing `react`, `react-*`, `@tanstack/*`, or any framework from `src/domain/**` | Define ports in `src/application/ports/` and implement them in `src/infrastructure/`           | The domain is pure TypeScript so it can be 100% covered without test doubles of React                                         |
+
+## Where to go next
+
+Pull in the reference file(s) that match the task — do not load all of them for a one-line fix.
+
+- **`references/react-fundamentals.md`** — components, props, hooks, Actions/forms, `ref`-as-prop, the React Compiler, testing. Read this for any component or hook work under `src/presentation/`.
+- **`references/data-fetching-react-query.md`** — TanStack Query v5: queries, mutations, cache keys, optimistic updates, pairing with router loaders. Read this for anything touching server data.
+- **`references/routing-react-router.md`** — React Router v8: data routers, loaders/actions, middleware, forms/fetchers. Read this for routing or navigation work.
+- **`references/project-setup.md`** — scaffolding, tsconfig, lint config, test setup, the dependency rule the linter enforces. Read this when starting a new feature, auditing tooling, or onboarding to the architecture.
+
+## Architecture reminders specific to Cineteca
+
+These are not "modern React" — they are this project's rules. Forgetting them produces code that the linter will reject.
+
+- **The domain is pure TypeScript.** No React, no Axios, no TanStack Query, no React Hook Form. Entities, states, policies, schemas, formatters — all in `src/domain/`. See `references/project-setup.md` for the layer map and the import rules.
+- **The HTTP client lives in exactly one directory tree.** `src/infrastructure/http/**` is the only place that imports `axios`. Resource adapters under `src/infrastructure/api/<resource>/` wrap the HTTP calls and validate the response with Zod before anything else touches it.
+- **The URL is a third untrusted edge.** Filter values from `useSearchParams` are validated with the same Zod schema that validates the response and the form — see `references/routing-react-router.md`.
+- **Test what the user experiences.** Tests query by accessible role and name (`screen.getByRole('button', { name: ... })`), not by class or test id. A test that needs a `data-testid` is usually a sign the component is not accessible. MSW handlers live in `src/test/msw/` and `onUnhandledRequest: 'error'` is the feature, not a bug.
+
+## A note on tone
+
+Do not turn every response into a lecture about deprecated APIs. If the user asks for a component, write a correct, current component — mention _why_ only when it is genuinely useful (e.g. they asked for `forwardRef`, or their existing code uses a removed API and needs updating). When the linter rejects an import, do not argue with it — restructure to fit the architecture.
