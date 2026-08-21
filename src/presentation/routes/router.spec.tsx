@@ -6,15 +6,22 @@
 import { render, screen } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider, type RouteObject } from 'react-router';
 import { describe, expect, it } from 'vitest';
+import { AppProviders } from '@/presentation/providers/app-providers';
 import { copy } from '../copy/strings';
 import { router } from './router';
 
 function renderRouterAt(path: string) {
   // Same route shape as `router`, but rebuilt on a memory history so the test
-  // can drive navigation without touching the browser URL.
+  // can drive navigation without touching the browser URL. The AppProviders
+  // wrapper is needed because HomePage, SearchPage, ExplorePage, and
+  // MovieDetailPage all use TanStack Query hooks.
   const routes = router.routes as RouteObject[];
   const memoryRouter = createMemoryRouter(routes, { initialEntries: [path] });
-  return render(<RouterProvider router={memoryRouter} />);
+  return render(
+    <AppProviders>
+      <RouterProvider router={memoryRouter} />
+    </AppProviders>,
+  );
 }
 
 describe('router', () => {
