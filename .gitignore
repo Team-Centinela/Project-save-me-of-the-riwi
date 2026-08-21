@@ -32,3 +32,8 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+# Personal copies of the project guides kept at the workspace root for
+# reference while working. The canonical versions live under docs/guides/.
+/Cineteca.md
+/Cinética BaseLine.md

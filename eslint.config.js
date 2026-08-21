@@ -12,7 +12,7 @@ import prettier from 'eslint-config-prettier';
 // does not yet export it. Revisit when eslint ^10.x ships defineConfig.
 export default tseslint.config(
   // ── Ignores ───────────────────────────────────────────────────────────
-  { ignores: ['dist', 'coverage', '*.config.{js,mjs,cjs}', 'eslint.config.js'] },
+  { ignores: ['dist', 'coverage', '*.config.{js,mjs,cjs,ts}', 'eslint.config.js'] },
 
   // ── Base, no type checking (applies to .js and .ts) ──────────────────
   js.configs.recommended,
