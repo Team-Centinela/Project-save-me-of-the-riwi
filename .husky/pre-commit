@@ -1,0 +1,2 @@
+pnpm lint-staged
+bash scripts/verify.sh --quick
