@@ -15,8 +15,18 @@ vi.stubEnv('VITE_TMDB_READ_TOKEN', 'a'.repeat(64));
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'error' });
 });
-afterEach(() => {
+afterEach(async () => {
   server.resetHandlers();
+  // The library repository is a process-lifetime singleton. Reset
+  // it so a previous test's corruption does not leak into the
+  // next. The function is async (it walks the storage) but the
+  // teardown is fire-and-forget.
+  const { __resetLibraryRepositoryForTests } = await import('./src/infrastructure/storage');
+  __resetLibraryRepositoryForTests();
+  // And clear the localStorage slot to keep tests independent.
+  if (typeof window !== 'undefined' && window.localStorage !== undefined) {
+    window.localStorage.clear();
+  }
   cleanup();
 });
 afterAll(() => {

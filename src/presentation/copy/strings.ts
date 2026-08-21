@@ -101,6 +101,21 @@ export const copy = {
     accessibleName: (title: string, year: string, ratingLabel: string) =>
       `${title}, ${year}, ${ratingLabel}`,
   },
+  library: {
+    title: 'My Cineteca',
+    description: 'Movies you have saved to watch later.',
+    empty: 'Your cineteca is empty.',
+    emptyHint: 'Save movies from the detail page to find them here.',
+    exploreCta: 'Explore movies',
+    loading: 'Loading your cineteca…',
+    loadingAria: 'Loading saved movies',
+    error: 'We could not load your cineteca.',
+    corruptedNotice:
+      'Your cineteca was reset because the stored data was unreadable. Re-save the movies you want to keep.',
+    saved: 'Saved',
+    addToLibrary: 'Save to my cineteca',
+    removeFromLibrary: 'Remove from my cineteca',
+  },
   notFound: {
     title: 'Page not found',
     description: 'The page you are looking for does not exist or has been moved.',

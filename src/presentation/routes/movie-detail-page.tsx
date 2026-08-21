@@ -34,6 +34,7 @@ import { useLocale } from '@/presentation/hooks/use-locale';
 import { useDocumentTitle } from '@/presentation/hooks/use-document-title';
 import { MovieHero } from '@/presentation/components/feature/movie-hero';
 import { MovieMetaPanel } from '@/presentation/components/feature/movie-meta-panel';
+import { SaveToLibraryButton } from '@/presentation/components/feature/save-to-library-button';
 import { SynopsisBlock } from '@/presentation/components/feature/synopsis-block';
 import { CastList } from '@/presentation/components/feature/cast-list';
 import { TrailerList } from '@/presentation/components/feature/trailer-list';
@@ -41,6 +42,9 @@ import { RecommendationRail } from '@/presentation/components/feature/recommenda
 import { ErrorState } from '@/presentation/components/ui/error-state';
 import { EmptyState } from '@/presentation/components/ui/empty-state';
 import { Skeleton } from '@/presentation/components/ui/skeleton';
+import { type LibraryEntry } from '@/domain/library/library-entry';
+import { matchMovieState } from '@/domain/movie/movie-state';
+import { matchRatingReliability } from '@/domain/rating/rating-reliability';
 import { matchNoData } from '@/domain/shared/no-data';
 import { copy } from '@/presentation/copy/strings';
 
@@ -147,6 +151,45 @@ export function MovieDetailPage(): ReactNode {
   const localizedOverview = movie.overview.trim() === '' ? null : movie.overview;
   const englishOverview = movie.overview.trim() === '' ? '' : movie.overview;
 
+  // Build the library entry from the detail. The original title
+  // is not on the detail response (it equals the title for
+  // English-language movies), so we fall back to the title.
+  const releaseDateString = matchMovieState(movie.state, {
+    released: (d) => d.toISOString().slice(0, 10),
+    unreleased: (d) => d.toISOString().slice(0, 10),
+    unknown: () => '',
+  });
+  const releaseYear = matchMovieState(movie.state, {
+    released: (d) => d.getUTCFullYear(),
+    unreleased: (d) => d.getUTCFullYear(),
+    unknown: () => null,
+  });
+  const voteAverage = matchRatingReliability(movie.rating, {
+    consolidated: (_v, a) => a,
+    early: (_v, a) => a,
+    unknown: () => 0,
+  });
+  const voteCount = matchRatingReliability(movie.rating, {
+    consolidated: (v) => v,
+    early: (v) => v,
+    unknown: () => 0,
+  });
+
+  const libraryEntry: LibraryEntry = {
+    id: movie.id,
+    title: movie.title,
+    originalTitle: movie.title,
+    overview: movie.overview,
+    releaseDate: releaseDateString,
+    releaseYear,
+    posterPath: movie.posterPath.kind === 'present' ? movie.posterPath.value : '',
+    backdropPath: movie.backdropPath.kind === 'present' ? movie.backdropPath.value : '',
+    voteAverage,
+    voteCount,
+    genreIds: movie.genreIds,
+    savedAt: new Date().toISOString(),
+  };
+
   return (
     <article data-testid="detail-page" className="flex flex-col gap-10">
       <MovieHero
@@ -155,6 +198,9 @@ export function MovieDetailPage(): ReactNode {
         locale={locale}
         headingRef={headingRef}
       />
+      <div className="flex flex-col gap-3">
+        <SaveToLibraryButton entry={libraryEntry} />
+      </div>
       <div className="grid grid-cols-1 gap-10 md:grid-cols-[2fr_1fr]">
         <div className="flex flex-col gap-10">
           <SynopsisBlock localized={localizedOverview} english={englishOverview} />
