@@ -4,21 +4,26 @@ These notes are calibrated to `react-router@8.3.0` (pinned in `package.json`) an
 
 ## The package changed shape
 
-As of v8, `react-router-dom` no longer exists as a separate package. Everything ships from `react-router`, with browser-specific entry points split into `react-router/dom`:
+As of v8, `react-router-dom` no longer exists as a separate package. Everything ships from `react-router`, with a narrow set of browser entry points under `react-router/dom`:
 
 ```tsx
-// Core routing — components, hooks, data APIs
+// Core routing — components, hooks, data APIs.
+// Everything in this list comes from 'react-router', NOT from 'react-router/dom':
+//   Routes, Route, Outlet, Link, NavLink, Form, ScrollRestoration,
+//   useNavigate, useParams, useSearchParams, useLoaderData, ...
 import { Routes, Route, Outlet, useNavigate, useParams, Link } from 'react-router';
 
-// Browser-specific entry points
-import { BrowserRouter } from 'react-router/dom';
-// or, for data routers:
-import { HydratedRouter } from 'react-router/dom';
+// 'react-router/dom' exports ONLY:
+//   - RouterProvider (for createBrowserRouter / createMemoryRouter)
+//   - HydratedRouter (framework-mode SSR entry point)
+//   - unstable_* RSC helpers
+// It does NOT re-export Link, NavLink, Form, Outlet, etc.
+import { RouterProvider } from 'react-router/dom';
 ```
 
 If you see `from 'react-router-dom'` in a codebase, that is either an older major (check `package.json` before "fixing" it) or a leftover that needs updating for a v8 project — do not assume, check.
 
-React Router v8 is **ESM-only** and requires **Node 22.22+** and **React 19.2.7+**. Cineteca's `package.json` already pins all three (`engines.node = ">=22"`, `react@^19.2.8`).
+React Router v8 is **ESM-only** and requires **Node 22.22+**, **React 19.2.7+**, and **Vite 7+**. Cineteca's `package.json` satisfies all four (`engines.node = ">=22"`, `react@^19.2.8`, `vite@^8.2.0`). The `tsconfig` `compilerOptions.target` and `compilerOptions.lib` must be at least `ES2022` — older targets trip the package's `exports` map.
 
 ## v5 muscle memory that is still floating around
 
@@ -83,10 +88,14 @@ Two practical consequences for routing work:
 
 ## Middleware (stable by default in v8)
 
-Middleware runs around loaders/actions for a route tree — the right place to centralize concerns like auth checks or logging instead of repeating a redirect check inside every route's loader:
+Middleware runs around loaders/actions for a route tree — the right place to centralize concerns like auth checks or logging instead of repeating a redirect check inside every route's loader.
+
+Import the type from `react-router`, **not** from `Route.*`. The `Route.*` namespace is emitted by `@react-router/dev`'s typegen in **Framework mode** (the former Remix); Cineteca is a plain Vite SPA in Data mode and has no `@react-router/dev`, so `Route.MiddlewareFunction` will not resolve here.
 
 ```tsx
-const requireAuth: Route.MiddlewareFunction = async ({ context }, next) => {
+import { createBrowserRouter, redirect, type MiddlewareFunction } from 'react-router';
+
+const requireAuth: MiddlewareFunction = async ({ context }, next) => {
   if (!context.user) {
     throw redirect('/login');
   }
@@ -101,6 +110,8 @@ const router = createBrowserRouter([
   },
 ]);
 ```
+
+The `context` argument is typed as `RouterContextProvider` in v8 — that is the new contract that replaced the old `unstable_createContext`-shaped context. Use a plain `createContext` from `react-router` and call `router.context.set(ctx, value)` (or the `.get()` form) to thread values through loaders, actions, and middleware.
 
 Cineteca does not have auth — the project explicitly excludes it — so middleware is currently used for cross-cutting concerns like "this route requires the cache to be warmed" rather than auth gating. Keep it that way.
 

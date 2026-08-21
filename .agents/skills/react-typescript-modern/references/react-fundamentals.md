@@ -54,7 +54,7 @@ function Heading({ text = 'Hello' }: HeadingProps) {
 
 **`ReactDOM.findDOMNode`** — removed. Use a ref on the element you actually need.
 
-**`react-test-renderer`** — deprecated, logs warnings. Use `@testing-library/react` instead (see Testing below).
+**`react-test-renderer`** — deprecated (logs warnings; switched to concurrent rendering). Only the `react-test-renderer/shallow` subpath was actually removed in React 19; the rest of the package still resolves but prints a deprecation warning on import. Use `@testing-library/react` instead (see Testing below).
 
 ## `ref` as a prop
 
