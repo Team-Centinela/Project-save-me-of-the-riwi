@@ -21,8 +21,10 @@ afterEach(async () => {
   // it so a previous test's corruption does not leak into the
   // next. The function is async (it walks the storage) but the
   // teardown is fire-and-forget.
-  const { __resetLibraryRepositoryForTests } = await import('./src/infrastructure/storage');
+  const { __resetLibraryRepositoryForTests, __resetListsRepositoryForTests } =
+    await import('./src/infrastructure/storage');
   __resetLibraryRepositoryForTests();
+  __resetListsRepositoryForTests();
   // And clear the localStorage slot to keep tests independent.
   if (typeof window !== 'undefined' && window.localStorage !== undefined) {
     window.localStorage.clear();
