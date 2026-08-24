@@ -23,6 +23,14 @@ Closes #
 - [ ] Performance improvement
 - [ ] Test only
 
+## Branch Naming
+
+<!-- Match the convention in CONTRIBUTING.md. PRs from branches that do not match are sent back. -->
+
+- [ ] My branch starts with `feature/`, `bugfix/`, `chore/`, `release/`, or `hotfix/`
+- [ ] My branch name is lowercase, kebab-case, and follows `<prefix>/<scope>-<short-desc>` (no issue number in the name)
+- [ ] I branched off `develop` (or off `main` for `hotfix/` and `release/`)
+
 ## What Changed
 
 <!-- A short bullet list of the actual changes. Group by component or file. -->
