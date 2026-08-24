@@ -116,28 +116,27 @@ In **Settings → General → Pull Requests**:
 
 In **Settings → Branches → Branch protection** on `main` **and** `develop`:
 
-| Setting                                      | `main`       | `develop`    |
-| -------------------------------------------- | ------------ | ------------ |
-| Require a pull request before merging        | **enabled**  | **enabled**  |
-| Required approvals                           | 1            | 1            |
-| Dismiss stale pull request approvals         | **enabled**  | **enabled**  |
-| Require status checks to pass before merging | **enabled**  | **enabled**  |
-| Required check                               | `gate` (CI)  | `gate` (CI)  |
-| Require branches to be up to date            | **enabled**  | **enabled**  |
-| Require conversation resolution              | **enabled**  | **enabled**  |
-| Require linear history                       | **disabled** | **disabled** |
-| Allow force pushes                           | disabled     | disabled     |
-| Allow deletions                              | disabled     | disabled     |
-| Include administrators                       | **enabled**  | disabled     |
-| Allow auto-merge                             | **enabled**  | **enabled**  |
+| Setting                                      | `main`              | `develop`           |
+| -------------------------------------------- | ------------------- | ------------------- |
+| Require a pull request before merging        | **enabled**         | **enabled**         |
+| Required approvals                           | 1                   | 1                   |
+| Dismiss stale pull request approvals         | **enabled**         | **enabled**         |
+| Require status checks to pass before merging | **enabled**         | **enabled**         |
+| Required check                               | `Quality gate` (CI) | `Quality gate` (CI) |
+| Require branches to be up to date            | **enabled**         | **enabled**         |
+| Require conversation resolution              | **enabled**         | **enabled**         |
+| Require linear history                       | **disabled**        | **disabled**        |
+| Allow force pushes                           | disabled            | disabled            |
+| Allow deletions                              | disabled            | disabled            |
+| Include administrators                       | **enabled**         | disabled            |
 
 > "Require linear history" literally forbids merge commits and would force you right back into the squash-only problem. It is deliberately off on both long-lived branches.
 >
 > "Include administrators" is **on** for `main` so the gate is the gate even for repo owners; it is **off** for `develop` so admins can fast-forward the integration branch while iterating on the next release.
 
-The full rationale and how each rule maps to the assignment gate ("nada entra a `main` sin el gate") lives in [issue #27](https://github.com/Team-Centinela/Project-save-me-of-the-riwi/issues/27).
+The full rationale and how each rule maps to the assignment gate ("nada entra a `main` sin el gate") lives in [issue #27](https://github.com/Team-Centinela/Project-save-me-of-the-riwi/issues/27). The hybrid strategy itself is in [issue #29](https://github.com/Team-Centinela/Project-save-me-of-the-riwi/issues/29).
 
-The full rationale — including the per-branch ruleset, the `Include administrators` asymmetry, and how this maps to the assignment gate ("nada entra a `main` sin el gate") — is in [issue #27](https://github.com/Team-Centinela/Project-save-me-of-the-riwi/issues/27). The hybrid strategy itself is in [issue #29](https://github.com/Team-Centinela/Project-save-me-of-the-riwi/issues/29).
+> Note: `Allow auto-merge` lives at the repo level (Settings → General → Pull Requests) and is a single value for all branches, not a per-branch protection setting. It is already documented in the table above under the hybrid merge strategy (issue #29).
 
 ### How to choose the merge button for each PR
 
