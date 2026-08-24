@@ -1,0 +1,105 @@
+# deploy.yml — build `main` and publish it to GitHub Pages.
+#
+# Deploy target rationale (issue #18): the repo already lives on
+# GitHub with Actions wired up; Pages needs no external account
+# and no additional vendor. The two GitHub-Pages-specific quirks
+# are handled here, not in application code:
+#
+#   1. Base path — project sites are served under
+#      https://<org>.github.io/<repo>/, so the bundle is built
+#      with CINETECA_BASE_PATH=/<repo>/ (see vite.config.ts).
+#
+#   2. SPA deep links — a hard reload of /explore?genre=28 has no
+#      file on the server, so Pages would serve its default 404.
+#      Copying index.html to 404.html makes Pages fall back to
+#      the app shell while the browser keeps the original URL;
+#      React Router then matches the deep route client-side,
+#      query string included.
+#
+# VITE_TMDB_READ_TOKEN is injected from repository secrets at
+# build time. It ends up embedded in the public JS bundle — that
+# is expected: TMDB read-access tokens are designed to be public
+# (the write key never touches this repo).
+
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build for Pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Fail fast if the TMDB token secret is missing
+        env:
+          VITE_TMDB_READ_TOKEN: ${{ secrets.VITE_TMDB_READ_TOKEN }}
+        run: |
+          if [ -z "$VITE_TMDB_READ_TOKEN" ]; then
+            echo "::error::VITE_TMDB_READ_TOKEN secret is not set."
+            echo "Add it under Settings → Secrets and variables → Actions;"
+            echo "the deployed app cannot reach TMDB without it."
+            exit 1
+          fi
+
+      - name: Build
+        run: pnpm build
+        env:
+          CINETECA_BASE_PATH: /${{ github.event.repository.name }}/
+          VITE_TMDB_READ_TOKEN: ${{ secrets.VITE_TMDB_READ_TOKEN }}
+
+      - name: SPA fallback — serve index.html on unknown paths
+        run: cp dist/index.html dist/404.html
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: Publish to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

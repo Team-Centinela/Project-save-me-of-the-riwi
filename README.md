@@ -147,6 +147,25 @@ A pull request cannot land without the `gate` CI check green. Branch protection 
 
 ---
 
+## Deployment
+
+The app is deployed automatically to **GitHub Pages** on every push to `main`.
+
+**Public URL:** <https://team-centinela.github.io/Project-save-me-of-the-riwi/>
+
+- A deep link such as `/explore?genre=28` can be shared and reloaded directly: GitHub Pages falls back to the app shell (`404.html`), the browser keeps the original URL, and React Router resolves the route client-side — filters included.
+- The TMDB attribution required by their terms of use is visible in the footer of every screen.
+
+### How it works
+
+The [`deploy` workflow](./.github/workflows/deploy.yml) builds `main` with the repository base path (`CINETECA_BASE_PATH=/<repo>/`, see `vite.config.ts`), copies `index.html` to `404.html` as the SPA fallback, and publishes `dist/` through the official Pages actions. The pipeline runs on push to `main` and can also be triggered manually from the Actions tab (`workflow_dispatch`).
+
+### Required secret
+
+The build embeds `VITE_TMDB_READ_TOKEN` into the public JS bundle — that is expected: TMDB read-access tokens are designed to be public. Configure it once under **Settings → Secrets and variables → Actions → Repository secrets**; the deploy workflow fails fast with a clear message if it is missing. The write-capable key never belongs in this repository.
+
+---
+
 ## TMDB attribution
 
 This product uses the TMDB API but is not endorsed or certified by TMDB.
