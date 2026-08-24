@@ -17,6 +17,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppProviders } from '@/presentation/providers/app-providers';
 import { SearchPage } from './search-page';
 import { server } from '@/test/msw/server';
+import { formatViolations, runAxe } from '@/test/axe';
 
 const sampleSummary = (overrides: Record<string, unknown> = {}) => ({
   id: 27205,
@@ -255,5 +256,14 @@ describe('SearchPage', () => {
     const grid = await screen.findByTestId('search-grid');
     expect(grid).toBeInTheDocument();
     vi.useRealTimers();
+  });
+
+  describe('accessibility', () => {
+    it('has no axe-core violations on the success render', async () => {
+      const { container } = renderAt('/search');
+      await screen.findByTestId('search-page');
+      const violations = await runAxe(container);
+      expect(violations, formatViolations(violations)).toEqual([]);
+    });
   });
 });

@@ -20,6 +20,7 @@ import { MemoryRouter, Route, Routes } from 'react-router';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { AppProviders } from '@/presentation/providers/app-providers';
 import { copy } from '@/presentation/copy/strings';
+import { formatViolations, runAxe } from '@/test/axe';
 import { ListCreatePage } from './list-create-page';
 import { ListsPage } from './lists-page';
 
@@ -88,5 +89,14 @@ describe('ListCreatePage', () => {
     renderAt();
     await screen.findByRole('heading', { name: copy.lists.createTitle });
     expect(document.title).toBe(copy.lists.createTitle);
+  });
+
+  describe('accessibility', () => {
+    it('has no axe-core violations on the create-form render', async () => {
+      const { container } = renderAt();
+      await screen.findByRole('heading', { name: copy.lists.createTitle });
+      const violations = await runAxe(container);
+      expect(violations, formatViolations(violations)).toEqual([]);
+    });
   });
 });

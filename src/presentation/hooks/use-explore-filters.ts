@@ -37,7 +37,14 @@ const MIN_VOTES = 0;
 const MAX_VOTES = 1_000_000;
 
 const MIN_PAGE = 1;
-const TMDB_MAX_PAGES = 500;
+/**
+ * TMDB hard cap for `/discover/movie` responses. Exported so
+ * `use-discover-movies.ts` can guard `fetchNextPage` with the
+ * same literal — the two-layer page guard (URL parser + hook)
+ * must stay in lockstep, and one shared constant is how that
+ * is guaranteed.
+ */
+export const TMDB_MAX_PAGES = 500;
 
 const SORT_VALUES = [
   'popularity.desc',

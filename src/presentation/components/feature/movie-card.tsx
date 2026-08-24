@@ -17,6 +17,8 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { type ImageConfiguration, posterUrl } from '@/domain/configuration/image-configuration';
+import { formatRatingAverage } from '@/domain/format/rating-average';
+import { formatVoteCountCompact } from '@/domain/format/vote-count';
 import { type MovieSummary } from '@/domain/movie/movie-summary';
 import { matchMovieState } from '@/domain/movie/movie-state';
 import { matchRatingReliability } from '@/domain/rating/rating-reliability';
@@ -41,7 +43,10 @@ function formatYear(state: MovieSummary['state']): string {
   });
 }
 
-function formatRating(rating: MovieSummary['rating']): {
+function formatRating(
+  rating: MovieSummary['rating'],
+  locale: string,
+): {
   label: string;
   kind: 'consolidated' | 'early' | 'unknown';
   value: number | null;
@@ -49,13 +54,13 @@ function formatRating(rating: MovieSummary['rating']): {
 } {
   return matchRatingReliability(rating, {
     consolidated: (votes, average) => ({
-      label: average.toFixed(1),
+      label: formatRatingAverage(average, locale),
       kind: 'consolidated' as const,
       value: average,
       votes,
     }),
     early: (votes, average) => ({
-      label: average.toFixed(1),
+      label: formatRatingAverage(average, locale),
       kind: 'early' as const,
       value: average,
       votes,
@@ -69,20 +74,6 @@ function formatRating(rating: MovieSummary['rating']): {
   });
 }
 
-function formatVotes(votes: number, locale: string): string {
-  try {
-    return new Intl.NumberFormat(locale, {
-      notation: 'compact',
-      maximumFractionDigits: 1,
-    }).format(votes);
-  } catch {
-    // Some jsdom test environments do not implement Intl.NumberFormat
-    // with every option. Fall back to the raw number so the test
-    // still asserts something meaningful.
-    return String(votes);
-  }
-}
-
 export function MovieCard({
   movie,
   imageConfig,
@@ -90,13 +81,19 @@ export function MovieCard({
   testId,
 }: MovieCardProps): ReactNode {
   const year = formatYear(movie.state);
-  const rating = formatRating(movie.rating);
+  const rating = formatRating(movie.rating, locale);
   const poster =
     imageConfig !== undefined
       ? posterUrl(imageConfig, movie.posterPath.kind === 'present' ? movie.posterPath.value : null)
       : null;
+  // The ARIA label and the visual placeholder are sourced from
+  // the copy module so the wording stays in one place. The card's
+  // visual year slot uses the dash glyph; the accessible label
+  // spells it out for screen readers.
   const yearForAria =
-    movie.state.kind === 'released' || movie.state.kind === 'unreleased' ? year : 'no year';
+    movie.state.kind === 'released' || movie.state.kind === 'unreleased'
+      ? year
+      : copy.movieCard.noYearAria;
   const accessibleName = copy.movieCard.accessibleName(movie.title, yearForAria, rating.label);
   const hasPoster = poster !== null;
   const isUpcoming = movie.state.kind === 'unreleased';
@@ -158,7 +155,7 @@ export function MovieCard({
           {rating.label}
           {rating.votes !== null && (
             <span className="ml-1 text-xs font-normal text-ink-muted">
-              ({formatVotes(rating.votes, locale)})
+              ({formatVoteCountCompact(rating.votes, locale)})
             </span>
           )}
         </p>

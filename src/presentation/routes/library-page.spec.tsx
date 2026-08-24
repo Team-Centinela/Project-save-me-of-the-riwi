@@ -21,6 +21,7 @@ import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { AppProviders } from '@/presentation/providers/app-providers';
 import { LibraryPage } from './library-page';
+import { formatViolations, runAxe } from '@/test/axe';
 
 describe('LibraryPage', () => {
   beforeEach(() => {
@@ -115,5 +116,14 @@ describe('LibraryPage', () => {
     renderAt();
     await screen.findByTestId('library-page');
     expect(document.title).toBe('My Cineteca');
+  });
+
+  describe('accessibility', () => {
+    it('has no axe-core violations on the empty render', async () => {
+      const { container } = renderAt();
+      await screen.findByTestId('library-empty');
+      const violations = await runAxe(container);
+      expect(violations, formatViolations(violations)).toEqual([]);
+    });
   });
 });

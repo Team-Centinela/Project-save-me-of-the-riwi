@@ -10,6 +10,8 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { type ImageConfiguration, posterUrl } from '@/domain/configuration/image-configuration';
+import { formatRatingAverage } from '@/domain/format/rating-average';
+import { formatVoteCount } from '@/domain/format/vote-count';
 import { type MovieSummary } from '@/domain/movie/movie-summary';
 import { matchMovieState } from '@/domain/movie/movie-state';
 import { matchRatingReliability } from '@/domain/rating/rating-reliability';
@@ -27,24 +29,30 @@ export interface MovieHeroProps {
   readonly headingRef?: React.Ref<HTMLHeadingElement>;
 }
 
-function formatRating(rating: MovieSummary['rating']): {
+function formatRating(
+  rating: MovieSummary['rating'],
+  locale: string,
+): {
   label: string;
   kind: 'consolidated' | 'early' | 'unknown';
 } {
   return matchRatingReliability(rating, {
-    consolidated: (_votes, average) => ({ label: average.toFixed(1), kind: 'consolidated' }),
-    early: (_votes, average) => ({ label: average.toFixed(1), kind: 'early' }),
+    consolidated: (_votes, average) => ({
+      label: formatRatingAverage(average, locale),
+      kind: 'consolidated',
+    }),
+    early: (_votes, average) => ({
+      label: formatRatingAverage(average, locale),
+      kind: 'early',
+    }),
     unknown: () => ({ label: copy.movieCard.noRating, kind: 'unknown' }),
   });
 }
 
 function formatVotes(rating: MovieSummary['rating'], locale: string): string {
-  if (rating.kind === 'unknown') return copy.detail.voteCountAbsent;
-  return copy.detail.voteCount(
-    new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(
-      rating.votes,
-    ),
-  );
+  if (rating.kind === 'unknown') return copy.format.voteCountAbsent;
+  const formatted = formatVoteCount(rating.votes, locale);
+  return copy.format.voteCount(formatted, rating.votes);
 }
 
 function releaseLine(state: MovieSummary['state']): { label: string; tone: BadgeTone } {
@@ -74,7 +82,7 @@ export function MovieHero({
     imageConfig !== undefined
       ? posterUrl(imageConfig, movie.posterPath.kind === 'present' ? movie.posterPath.value : null)
       : null;
-  const rating = formatRating(movie.rating);
+  const rating = formatRating(movie.rating, locale);
   const release = releaseLine(movie.state);
   const back = (
     <Link

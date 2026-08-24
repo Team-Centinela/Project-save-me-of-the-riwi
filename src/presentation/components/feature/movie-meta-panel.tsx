@@ -35,10 +35,10 @@ function moneyLabel(raw: NoData<Money>, locale: string): string {
   });
 }
 
-function runtimeLabel(raw: NoData<number>): string {
+function runtimeLabel(raw: NoData<number>, locale: string): string {
   return matchNoData(raw, {
     absent: () => copy.detail.noData,
-    present: (n) => formatDuration(n),
+    present: (n) => formatDuration(n, { locale }),
   });
 }
 
@@ -54,7 +54,7 @@ export function MovieMetaPanel({ movie, locale }: MovieMetaPanelProps): ReactNod
       </dd>
       <dt className="text-ink-muted">{copy.detail.runtime}</dt>
       <dd className="text-ink" data-testid="meta-runtime">
-        {runtimeLabel(movie.runtime)}
+        {runtimeLabel(movie.runtime, locale)}
       </dd>
       <dt className="text-ink-muted">{copy.detail.budget}</dt>
       <dd className="text-ink" data-testid="meta-budget">

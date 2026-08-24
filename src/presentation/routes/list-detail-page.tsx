@@ -27,6 +27,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { MovieCard } from '@/presentation/components/feature/movie-card';
 import { EmptyState } from '@/presentation/components/ui/empty-state';
 import { Skeleton } from '@/presentation/components/ui/skeleton';
+import { formatDateTime } from '@/domain/format/date-time';
 import { entryToMovieSummary } from '@/domain/library/library-entry';
 import { useDocumentTitle } from '@/presentation/hooks/use-document-title';
 import { useImageConfig } from '@/presentation/hooks/use-image-config';
@@ -39,18 +40,6 @@ function parseId(raw: string | undefined): string | null {
   if (raw === undefined) return null;
   if (raw.trim() === '') return null;
   return raw;
-}
-
-function formatUpdatedAt(iso: string, locale: string): string {
-  try {
-    const date = new Date(iso);
-    return new Intl.DateTimeFormat(locale, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    }).format(date);
-  } catch {
-    return iso;
-  }
 }
 
 export function ListDetailPage(): ReactNode {
@@ -168,7 +157,7 @@ export function ListDetailPage(): ReactNode {
               <p className="mt-1 max-w-prose text-sm text-ink-muted">{list.description}</p>
             )}
             <p className="mt-1 text-xs text-ink-muted">
-              {copy.lists.listUpdated(formatUpdatedAt(list.updatedAt, locale))} ·{' '}
+              {copy.lists.listUpdated(formatDateTime(list.updatedAt, locale))} ·{' '}
               {copy.lists.moviesCount(inListEntries.length)}
             </p>
           </div>
