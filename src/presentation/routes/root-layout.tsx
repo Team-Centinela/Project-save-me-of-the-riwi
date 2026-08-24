@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { to: '/explore', label: copy.nav.explore },
   { to: '/search', label: copy.nav.search },
   { to: '/my-cineteca', label: copy.nav.myCineteca },
+  { to: '/my-lists', label: copy.nav.myLists },
 ] as const;
 
 export function RootLayout() {

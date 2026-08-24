@@ -4,19 +4,25 @@
 // <header>, the <Outlet/>, and the <footer> with the TMDB attribution.
 //
 // Children today:
-//   - `/`             → HomePage. Weekly trending + CTA to explore.
-//   - `/explore`      → ExplorePage. The filtered grid of all movies.
-//   - `/search`       → SearchPage. Free-text search with debounce.
-//   - `/movie/:id`    → MovieDetailPage. Shareable detail screen.
-//   - `/my-cineteca`  → LibraryPage. The user's local library.
-//   - `*`             → NotFoundPage. Any path that does not match a
-//                       defined route renders here, inside the same
-//                       chrome as the rest of the app.
+//   - `/`                → HomePage. Weekly trending + CTA to explore.
+//   - `/explore`         → ExplorePage. The filtered grid of all movies.
+//   - `/search`          → SearchPage. Free-text search with debounce.
+//   - `/movie/:id`       → MovieDetailPage. Shareable detail screen.
+//   - `/my-cineteca`     → LibraryPage. The user's local library.
+//   - `/my-lists`        → ListsPage. The user's themed lists overview.
+//   - `/my-lists/new`    → ListCreatePage. The create-list form.
+//   - `/my-lists/:listId`→ ListDetailPage. The list detail with add/remove.
+//   - `*`                → NotFoundPage. Any path that does not match a
+//                          defined route renders here, inside the same
+//                          chrome as the rest of the app.
 
 import { createBrowserRouter } from 'react-router';
 import { ExplorePage } from './explore-page';
 import { HomePage } from './home-page';
 import { LibraryPage } from './library-page';
+import { ListCreatePage } from './list-create-page';
+import { ListDetailPage } from './list-detail-page';
+import { ListsPage } from './lists-page';
 import { MovieDetailPage } from './movie-detail-page';
 import { NotFoundPage } from './not-found-page';
 import { RootLayout } from './root-layout';
@@ -32,6 +38,9 @@ export const router = createBrowserRouter([
       { path: 'search', Component: SearchPage },
       { path: 'movie/:id', Component: MovieDetailPage },
       { path: 'my-cineteca', Component: LibraryPage },
+      { path: 'my-lists', Component: ListsPage },
+      { path: 'my-lists/new', Component: ListCreatePage },
+      { path: 'my-lists/:listId', Component: ListDetailPage },
       { path: '*', Component: NotFoundPage },
     ],
   },
