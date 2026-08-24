@@ -2,13 +2,17 @@
  * formatDuration — turn a runtime in minutes into a human label.
  *
  * Examples:
- *  - `formatDuration(0, 'en-US')`   → `"—"`         (no data)
- *  - `formatDuration(45, 'en-US')`  → `"45 min"`
- *  - `formatDuration(60, 'en-US')`  → `"1 h"`
- *  - `formatDuration(90, 'en-US')`  → `"1 h 30 min"`
- *  - `formatDuration(148, 'en-US')` → `"2 h 28 min"`
- *  - `formatDuration(148, 'de-DE')` → `"2 Std. 28 Min."` (German hours/minutes)
- *  - `formatDuration(148, 'es-CO')` → `"2 h 28 min"`     (short forms, like en)
+ *  - `formatDuration(0)`                          → `"—"`         (no data)
+ *  - `formatDuration(45)`                         → `"45 min"`
+ *  - `formatDuration(60)`                         → `"1 h"`
+ *  - `formatDuration(90)`                         → `"1 h 30 min"`
+ *  - `formatDuration(148)`                        → `"2 h 28 min"`
+ *  - `formatDuration(148, { locale: 'de-DE' })`   → `"2 Std. 28 Min."`
+ *  - `formatDuration(148, { locale: 'es-CO' })`   → `"2 h 28 min"`
+ *
+ * The locale is optional and defaults to `'en-US'`; it arrives
+ * through the `FormatDurationOptions` object so future options
+ * do not change the call shape.
  *
  * The `0` and negative cases return a dash so the UI can render a
  * placeholder without branching on the empty-string form. The

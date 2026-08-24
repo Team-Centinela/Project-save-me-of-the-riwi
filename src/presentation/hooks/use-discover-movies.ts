@@ -5,14 +5,11 @@
 // Query's `useInfiniteQuery`; the page token is the next page
 // number, or `undefined` once the last page is reached.
 //
-// TMDB caps responses at 500 pages (`/configuration` documents
-// it and `use-explore-filters.ts` enforces it on the URL). The
-// `getNextPageParam` callback also enforces it client-side so a
-// malformed server response (e.g. one that advertises 600 pages
-// while individual pages 501-600 are missing) cannot drive the
-// query into a loop. The two layers are belt-and-braces: the URL
-// guard protects the user from a hand-typed `?page=501`, the
-// hook guard protects the user from a buggy `total_pages` value.
+// TMDB caps responses at 500 pages. The cap constant lives in
+// `use-explore-filters.ts` (it guards the `?page=` URL param)
+// and is imported here so the literal exists in exactly one
+// place — the two-layer guard (URL parser + this hook) can
+// never drift apart.
 
 import { useInfiniteQuery } from '@tanstack/react-query';
 import {
@@ -22,10 +19,9 @@ import {
 } from '@/infrastructure/api';
 import { type MovieSummary } from '@/domain/movie/movie-summary';
 import { type PaginatedList } from '@/domain/movie/paginated';
+import { TMDB_MAX_PAGES } from './use-explore-filters';
 
 const TEN_MINUTES_MS = 10 * 60 * 1000;
-/** TMDB hard cap for `/discover/movie` responses. */
-export const TMDB_MAX_PAGES = 500;
 
 export interface UseDiscoverMoviesArgs {
   readonly genreIds?: readonly number[];

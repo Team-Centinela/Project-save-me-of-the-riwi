@@ -1,10 +1,11 @@
 /**
- * test/axe — twelve-line wrapper around `axe-core`.
+ * test/axe — a thin wrapper around `axe-core`.
  *
  * The wrapper packages around axe-core (`vitest-axe`, `jest-axe`)
- * are unmaintained; the wrapper itself is twelve lines of glue.
- * We call `axe.run` on the rendered container and assert that
- * every violation is tagged for review (`runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] }`).
+ * are unmaintained; the glue itself is small — most of this file
+ * is type declarations that keep the strict TypeScript rules
+ * happy. We call `axe.run` on the rendered container and map the
+ * violations into a plain shape for assertion messages.
  *
  * Use as the last assertion in a `.spec.tsx` so the test reports
  * accessibility regressions alongside behavioural ones.

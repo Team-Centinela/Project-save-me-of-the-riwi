@@ -76,7 +76,10 @@ describe('domain/format/duration', () => {
   });
 
   describe('rounding and locale defaults', () => {
-    it('rounds half-integer minutes toward even', () => {
+    it('rounds half-integer minutes toward nearest (half-up)', () => {
+      // `Math.round(89.5) === 90` in V8 — positive `.5` rounds up.
+      // The test pins that contract so a switch to banker's
+      // rounding would be a deliberate, visible change.
       expect(formatDuration(89.5, { locale: 'en-US' })).toBe('1 h 30 min');
     });
 
