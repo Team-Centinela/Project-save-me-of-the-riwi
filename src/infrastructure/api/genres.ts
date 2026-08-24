@@ -12,6 +12,7 @@
 
 import { z } from 'zod';
 import { tmdbHttpClient } from '@/infrastructure/http/client';
+import { parseWith } from './_shared';
 import type { Genre } from '@/domain/movie/genre';
 
 const genreSchema = z.object({
@@ -37,6 +38,6 @@ function toGenres(raw: GenresResponse): readonly Genre[] {
 export function getMovieGenres(): Promise<readonly Genre[]> {
   return tmdbHttpClient
     .get<unknown>('/3/genre/movie/list')
-    .then((data) => genresResponseSchema.parse(data))
+    .then((data) => parseWith(genresResponseSchema, data, '/3/genre/movie/list'))
     .then(toGenres);
 }

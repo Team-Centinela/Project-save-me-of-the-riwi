@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { tmdbHttpClient } from '@/infrastructure/http/client';
-import { tmdbMovieSummarySchema, toMovieSummary } from './_shared';
+import { clampPage, parseWith, tmdbMovieSummarySchema, toMovieSummary } from './_shared';
 import { type MovieSummary } from '@/domain/movie/movie-summary';
 import { type PaginatedList } from '@/domain/movie/paginated';
 
@@ -55,6 +55,7 @@ function toQueryParams(filters: DiscoverFilters): Record<string, string | number
   // Spread construction keeps every key a literal that the linter
   // accepts as dot-notation friendly while keeping the param object
   // sparse (unset filters are not sent).
+  const page = clampPage(filters.page);
   return {
     ...(filters.genreIds && filters.genreIds.length > 0
       ? { with_genres: filters.genreIds.join(',') }
@@ -65,7 +66,7 @@ function toQueryParams(filters: DiscoverFilters): Record<string, string | number
     ...(filters.minVoteAverage !== undefined ? { 'vote_average.gte': filters.minVoteAverage } : {}),
     ...(filters.minVoteCount !== undefined ? { 'vote_count.gte': filters.minVoteCount } : {}),
     ...(filters.sortBy !== undefined ? { sort_by: filters.sortBy } : {}),
-    ...(filters.page !== undefined ? { page: filters.page } : {}),
+    ...(page !== undefined ? { page } : {}),
     ...(filters.includeAdult !== undefined ? { include_adult: filters.includeAdult } : {}),
   };
 }
@@ -85,8 +86,10 @@ function toPaginatedMovies(
 /**
  * Discover movies matching the given filters. Returns a paginated
  * domain list — `results` are `MovieSummary` objects, not raw TMDB
- * JSON. Each `result` is validated with the shared schema, so a
- * broken field in the response surfaces a localized `ZodError`.
+ * JSON. A response whose shape drifted (a renamed field, a string
+ * where a number belongs) surfaces as a `TmdbSchemaError`, never
+ * as a raw `ZodError`. The requested page is clamped to TMDB's
+ * 500-page cap before the request leaves this module.
  */
 export function discoverMovies(
   filters: DiscoverFilters = {},
@@ -94,6 +97,6 @@ export function discoverMovies(
   const params = toQueryParams(filters);
   return tmdbHttpClient
     .get<unknown>('/3/discover/movie', { params })
-    .then((data) => discoverResponseSchema.parse(data))
+    .then((data) => parseWith(discoverResponseSchema, data, '/3/discover/movie'))
     .then((parsed) => toPaginatedMovies(parsed));
 }

@@ -121,6 +121,22 @@ describe('infrastructure/api/search', () => {
       detail: { kind: 'invalidPage' },
     });
   });
+
+  it('clamps the requested page into the [1, 500] TMDB range', async () => {
+    const captured: URL[] = [];
+    server.use(
+      http.get(`${BASE}/3/search/movie`, ({ request }) => {
+        captured.push(new URL(request.url));
+        return HttpResponse.json({ page: 1, results: [], total_pages: 0, total_results: 0 });
+      }),
+    );
+
+    const { searchMovies } = await import('./search');
+    await searchMovies({ query: 'q', page: 501 });
+    await searchMovies({ query: 'q', page: -3 });
+    expect(captured[0]?.searchParams.get('page')).toBe('500');
+    expect(captured[1]?.searchParams.get('page')).toBe('1');
+  });
 });
 
 function assertedUrl(value: URL | null): URL {

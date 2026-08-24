@@ -122,6 +122,20 @@ describe('infrastructure/api/trending', () => {
       detail: { kind: 'invalidApiKey' },
     });
   });
+
+  it('clamps a page beyond the TMDB cap to 500 before sending the request', async () => {
+    let requestedUrl: URL | null = null;
+    server.use(
+      http.get(`${BASE}/3/trending/movie/day`, ({ request }) => {
+        requestedUrl = new URL(request.url);
+        return HttpResponse.json({ page: 500, results: [], total_pages: 500, total_results: 0 });
+      }),
+    );
+
+    const { getTrendingMovies } = await import('./trending');
+    await getTrendingMovies({ timeWindow: 'day', page: 999 });
+    expect(assertedUrl(requestedUrl).searchParams.get('page')).toBe('500');
+  });
 });
 
 function assertedUrl(value: URL | null): URL {

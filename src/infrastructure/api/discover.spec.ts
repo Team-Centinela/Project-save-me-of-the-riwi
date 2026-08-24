@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { server } from '@/test/msw/server';
+import { z } from 'zod';
 
 const BASE = 'https://api.tmdb.test';
 const TOKEN = 'a'.repeat(64);
@@ -151,6 +152,65 @@ describe('infrastructure/api/discover', () => {
 
     const { discoverMovies } = await import('./discover');
     await expect(discoverMovies()).rejects.toThrow();
+  });
+
+  it('surfaces a drifted response shape as a typed TmdbSchemaError, not a ZodError', async () => {
+    server.use(
+      http.get(`${BASE}/3/discover/movie`, () =>
+        HttpResponse.json({
+          page: 'not-a-number',
+          results: [],
+          total_pages: 0,
+          total_results: 0,
+        }),
+      ),
+    );
+
+    const { discoverMovies } = await import('./discover');
+    const { TmdbSchemaError } = await import('./_shared');
+    try {
+      await discoverMovies();
+      throw new Error('expected discoverMovies to reject');
+    } catch (cause: unknown) {
+      expect(cause).toBeInstanceOf(TmdbSchemaError);
+      expect(cause).not.toBeInstanceOf(z.ZodError);
+      // Structural assertion: keeps the check independent of how
+      // the class resolves through the dynamic import above.
+      const error = cause as { endpoint: string; message: string; issues: readonly string[] };
+      expect(error.endpoint).toBe('/3/discover/movie');
+      expect(error.message).toContain('/3/discover/movie');
+      expect(error.issues.some((issue) => issue.startsWith('page:'))).toBe(true);
+    }
+  });
+
+  it('clamps a page beyond the TMDB cap to 500 before sending the request', async () => {
+    let requestedUrl: URL | null = null;
+    server.use(
+      http.get(`${BASE}/3/discover/movie`, ({ request }) => {
+        requestedUrl = new URL(request.url);
+        return HttpResponse.json({ page: 500, results: [], total_pages: 500, total_results: 0 });
+      }),
+    );
+
+    const { discoverMovies } = await import('./discover');
+    const result = await discoverMovies({ page: 501 });
+    expect(assertedUrl(requestedUrl).searchParams.get('page')).toBe('500');
+    // The response is echoed as-is; the clamp is about what we send.
+    expect(result.page).toBe(500);
+  });
+
+  it('clamps an out-of-range page below the floor to page 1', async () => {
+    let requestedUrl: URL | null = null;
+    server.use(
+      http.get(`${BASE}/3/discover/movie`, ({ request }) => {
+        requestedUrl = new URL(request.url);
+        return HttpResponse.json({ page: 1, results: [], total_pages: 0, total_results: 0 });
+      }),
+    );
+
+    const { discoverMovies } = await import('./discover');
+    await discoverMovies({ page: 0 });
+    expect(assertedUrl(requestedUrl).searchParams.get('page')).toBe('1');
   });
 
   it('propagates HTTP errors as TmdbHttpError (e.g. invalid page)', async () => {

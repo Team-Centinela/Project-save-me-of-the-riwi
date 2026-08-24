@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { tmdbHttpClient } from '@/infrastructure/http/client';
-import { tmdbMovieSummarySchema, toMovieSummary } from './_shared';
+import { clampPage, parseWith, tmdbMovieSummarySchema, toMovieSummary } from './_shared';
 import { type MovieSummary } from '@/domain/movie/movie-summary';
 import { type PaginatedList } from '@/domain/movie/paginated';
 
@@ -25,9 +25,10 @@ const searchResponseSchema = z.object({
 type SearchResponse = z.infer<typeof searchResponseSchema>;
 
 function toQueryParams(params: SearchParams): Record<string, string | number | boolean> {
+  const page = clampPage(params.page);
   return {
     query: params.query,
-    ...(params.page !== undefined ? { page: params.page } : {}),
+    ...(page !== undefined ? { page } : {}),
     ...(params.includeAdult !== undefined ? { include_adult: params.includeAdult } : {}),
     ...(params.primaryReleaseYear !== undefined
       ? { primary_release_year: params.primaryReleaseYear }
@@ -52,12 +53,14 @@ function toPaginatedMovies(
  * list; each result is a validated `MovieSummary` (no raw TMDB
  * JSON). Empty results come back as an empty `results` array,
  * not as an error — searching for nothing matched is a normal
- * "empty by filter" state, not a failure.
+ * "empty by filter" state, not a failure. A drifted response
+ * shape surfaces as `TmdbSchemaError`; the requested page is
+ * clamped to TMDB's 500-page cap.
  */
 export function searchMovies(params: SearchParams): Promise<PaginatedList<MovieSummary>> {
   const query = toQueryParams(params);
   return tmdbHttpClient
     .get<unknown>('/3/search/movie', { params: query })
-    .then((data) => searchResponseSchema.parse(data))
+    .then((data) => parseWith(searchResponseSchema, data, '/3/search/movie'))
     .then((parsed) => toPaginatedMovies(parsed));
 }
