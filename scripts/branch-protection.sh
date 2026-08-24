@@ -28,6 +28,12 @@ fi
 
 # Expected state per branch, used for the post-apply verification.
 # Keep these in sync with the table in CONTRIBUTING.md.
+#
+# Note: contexts is checked even though it is identical on both
+# branches — the round-1 review caught a `gate` vs `Quality gate`
+# typo in exactly this field, so excluding it on a "differs per
+# branch" filter would re-introduce the silent-failure mode the
+# whole verification step exists to catch.
 declare -A EXPECT_ENFORCE_ADMINS=(
   ["main"]="true"
   ["develop"]="false"
@@ -35,6 +41,10 @@ declare -A EXPECT_ENFORCE_ADMINS=(
 declare -A EXPECT_LINEAR=(
   ["main"]="false"
   ["develop"]="false"
+)
+declare -A EXPECT_CONTEXTS=(
+  ["main"]="Quality gate"
+  ["develop"]="Quality gate"
 )
 
 main_body='{
@@ -90,19 +100,24 @@ api() {
 }
 
 verify() {
-  local branch="$1" got got_admins got_linear
+  local branch="$1" got got_admins got_linear got_contexts
   got=$(api GET "/branches/${branch}/protection")
   got_admins=$(printf '%s' "$got" | jq -r '.enforce_admins.enabled')
   got_linear=$(printf '%s' "$got" | jq -r '.required_linear_history.enabled')
+  got_contexts=$(printf '%s' "$got" | jq -r '.required_status_checks.contexts | join(",")')
   if [[ "$got_admins" != "${EXPECT_ENFORCE_ADMINS[$branch]}" ]]; then
-    echo "✘ ${branch}: enforce_admins expected '${EXPECT_ENFORCE_ADMINS[$branch]}', got '${got_admins}'" >&2
+    echo "� ${branch}: enforce_admins expected '${EXPECT_ENFORCE_ADMINS[$branch]}', got '${got_admins}'" >&2
     return 1
   fi
   if [[ "$got_linear" != "${EXPECT_LINEAR[$branch]}" ]]; then
     echo "✘ ${branch}: required_linear_history expected '${EXPECT_LINEAR[$branch]}', got '${got_linear}'" >&2
     return 1
   fi
-  echo "  ✓ ${branch}: enforce_admins=${got_admins}, required_linear_history=${got_linear}"
+  if [[ "$got_contexts" != "${EXPECT_CONTEXTS[$branch]}" ]]; then
+    echo "✘ ${branch}: required contexts expected '${EXPECT_CONTEXTS[$branch]}', got '${got_contexts}'" >&2
+    return 1
+  fi
+  echo "  ✓ ${branch}: enforce_admins=${got_admins}, required_linear_history=${got_linear}, required_contexts=${got_contexts}"
 }
 
 for branch in "${BRANCHES[@]}"; do
