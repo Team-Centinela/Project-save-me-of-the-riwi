@@ -13,6 +13,7 @@
 # Why a script: the ruleset is the single source of truth in
 # CONTRIBUTING.md. This script encodes that table so the settings can
 # be reproduced by any maintainer without copy-pasting from the docs.
+# Issue #27.
 
 set -euo pipefail
 
@@ -25,23 +26,16 @@ if [[ -z "${GITHUB_TOKEN:-}" ]]; then
   exit 2
 fi
 
-api() {
-  local method="$1" path="$2" body="${3:-}"
-  if [[ -n "$body" ]]; then
-    gh api \
-      --method "$method" \
-      -H "Accept: application/vnd.github+json" \
-      -H "X-GitHub-Api-Version: 2022-11-28" \
-      "/repos/${OWNER}/${REPO}${path}" \
-      --input - <<<"$body"
-  else
-    gh api \
-      --method "$method" \
-      -H "Accept: application/vnd.github+json" \
-      -H "X-GitHub-Api-Version: 2022-11-28" \
-      "/repos/${OWNER}/${REPO}${path}"
-  fi
-}
+# Expected state per branch, used for the post-apply verification.
+# Keep these in sync with the table in CONTRIBUTING.md.
+declare -A EXPECT_ENFORCE_ADMINS=(
+  ["main"]="true"
+  ["develop"]="false"
+)
+declare -A EXPECT_LINEAR=(
+  ["main"]="false"
+  ["develop"]="false"
+)
 
 main_body='{
   "required_status_checks": {
@@ -77,11 +71,46 @@ develop_body='{
   "required_conversation_resolution": true
 }'
 
+api() {
+  local method="$1" path="$2" body="${3:-}"
+  if [[ -n "$body" ]]; then
+    gh api \
+      --method "$method" \
+      -H "Accept: application/vnd.github+json" \
+      -H "X-GitHub-Api-Version: 2022-11-28" \
+      "/repos/${OWNER}/${REPO}${path}" \
+      --input - <<<"$body"
+  else
+    gh api \
+      --method "$method" \
+      -H "Accept: application/vnd.github+json" \
+      -H "X-GitHub-Api-Version: 2022-11-28" \
+      "/repos/${OWNER}/${REPO}${path}"
+  fi
+}
+
+verify() {
+  local branch="$1" got got_admins got_linear
+  got=$(api GET "/branches/${branch}/protection")
+  got_admins=$(printf '%s' "$got" | jq -r '.enforce_admins.enabled')
+  got_linear=$(printf '%s' "$got" | jq -r '.required_linear_history.enabled')
+  if [[ "$got_admins" != "${EXPECT_ENFORCE_ADMINS[$branch]}" ]]; then
+    echo "✘ ${branch}: enforce_admins expected '${EXPECT_ENFORCE_ADMINS[$branch]}', got '${got_admins}'" >&2
+    return 1
+  fi
+  if [[ "$got_linear" != "${EXPECT_LINEAR[$branch]}" ]]; then
+    echo "✘ ${branch}: required_linear_history expected '${EXPECT_LINEAR[$branch]}', got '${got_linear}'" >&2
+    return 1
+  fi
+  echo "  ✓ ${branch}: enforce_admins=${got_admins}, required_linear_history=${got_linear}"
+}
+
 for branch in "${BRANCHES[@]}"; do
   body="$main_body"
   [[ "$branch" == "develop" ]] && body="$develop_body"
   echo "→ Applying protection to ${OWNER}/${REPO}@${branch}"
   api PUT "/branches/${branch}/protection" "$body" >/dev/null
+  verify "$branch"
 done
 
-echo "✔ Branch protection applied to main and develop."
+echo "✔ Branch protection applied and verified on main and develop."
