@@ -104,14 +104,15 @@ shows only the merge commits on `main` — one line per release. The granular fe
 
 In **Settings → General → Pull Requests**:
 
-| Setting                            | Value       |
-| ---------------------------------- | ----------- |
-| Allow squash merging               | enabled     |
-| Allow merge commits                | **enabled** |
-| Allow rebase merging               | disabled    |
-| Allow auto-merge                   | enabled     |
-| Automatically delete head branches | enabled     |
-| Default squash commit message      | PR title    |
+| Setting                            | Value        |
+| ---------------------------------- | ------------ |
+| Allow squash merging               | enabled      |
+| Allow merge commits                | **enabled**  |
+| Allow rebase merging               | **disabled** |
+| Allow auto-merge                   | **enabled**  |
+| Automatically delete head branches | **enabled**  |
+| Default squash commit title        | PR title     |
+| Default squash commit message      | PR body      |
 
 In **Settings → Branches → Branch protection** on `main` **and** `develop`:
 
@@ -120,6 +121,8 @@ In **Settings → Branches → Branch protection** on `main` **and** `develop`:
 | Require linear history | **disabled** |
 
 "Require linear history" literally forbids merge commits and would force you right back into the squash-only problem. It is deliberately off.
+
+The full rationale — including the per-branch ruleset, the `Include administrators` asymmetry, and how this maps to the assignment gate ("nada entra a `main` sin el gate") — is in [issue #27](https://github.com/Team-Centinela/Project-save-me-of-the-riwi/issues/27). The hybrid strategy itself is in [issue #29](https://github.com/Team-Centinela/Project-save-me-of-the-riwi/issues/29).
 
 ### How to choose the merge button for each PR
 
