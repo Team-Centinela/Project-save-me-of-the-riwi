@@ -67,8 +67,16 @@ export function ListDetailPage(): ReactNode {
     return lists.getList(id);
   }, [id, lists]);
 
+  // The title mirrors the same branch that picks the body, so the
+  // tab never lies. `id === null` and "list not found" both surface
+  // the not-found title; the loading state surfaces the loading
+  // title; the success state names the list.
   useDocumentTitle(
-    list === undefined ? copy.lists.detailLoadingAria : `${copy.lists.title}: ${list.name}`,
+    id === null || (!lists.isLoading && list === undefined)
+      ? copy.lists.notFoundTitle
+      : lists.isLoading
+        ? copy.lists.detailLoadingAria
+        : `${copy.lists.title}: ${list.name}`,
   );
 
   const onRemove = useCallback(

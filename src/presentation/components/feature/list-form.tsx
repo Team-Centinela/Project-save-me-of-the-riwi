@@ -13,8 +13,8 @@
 //   - Errors are surfaced in a `role="alert"` region so screen
 //     readers announce them as soon as the form re-renders.
 //   - The first invalid field receives focus on submit failure,
-//     via react-hook-form's `setFocus`. Keyboard users land
-//     exactly where the next action has to happen.
+//     via react-hook-form's `shouldFocusError`. Keyboard users
+//     land exactly where the next action has to happen.
 //   - `aria-invalid` and `aria-describedby` link each field to
 //     its error message.
 //   - Submit is blocked while the mutation is in-flight; the
@@ -66,28 +66,16 @@ export function ListForm({
   const {
     register,
     handleSubmit,
-    setFocus,
     formState: { errors, isSubmitted },
   } = useForm<ListFormValues>({
     resolver: zodResolver(listFormSchema),
     defaultValues,
     mode: 'onSubmit',
     reValidateMode: 'onChange',
+    // react-hook-form focuses the first invalid field on submit
+    // failure for us; no manual `setFocus` is needed.
     shouldFocusError: true,
   });
-
-  // Move focus to the first invalid field on submit failure. The
-  // `setFocus` call only fires when `errors` is non-empty; the
-  // schema enforces at most one error per field, and the
-  // "first invalid" is whichever field has the earliest focus
-  // order in the DOM (name comes first by design).
-  function onSubmitFailure(): void {
-    if (errors.name !== undefined) {
-      setFocus('name');
-    } else if (errors.description !== undefined) {
-      setFocus('description');
-    }
-  }
 
   const submitLabel = mode === 'create' ? copy.lists.submitCreate : copy.lists.submitEdit;
   const pendingLabel = copy.lists.submitInFlight;
@@ -97,7 +85,7 @@ export function ListForm({
       aria-label={formAriaLabel}
       noValidate
       onSubmit={(event) => {
-        void handleSubmit(onSubmit, onSubmitFailure)(event);
+        void handleSubmit(onSubmit)(event);
       }}
       className="flex flex-col gap-5 rounded-card border border-ink-muted/20 bg-surface-raised p-6"
     >

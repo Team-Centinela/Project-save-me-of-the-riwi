@@ -46,7 +46,10 @@ export interface UseLists {
   readonly corrupted: boolean;
   readonly getList: (id: string) => List | undefined;
   readonly create: (list: List) => Promise<List>;
-  readonly update: (list: List) => Promise<List>;
+  // `update` is a no-op when the list is missing (see the port
+  // contract). The promise resolves with the updated list, or
+  // `undefined` when the call was a no-op.
+  readonly update: (list: List) => Promise<List | undefined>;
   readonly remove: (id: string) => Promise<void>;
   readonly addMovie: (listId: string, movieId: number) => Promise<void>;
   readonly removeMovie: (listId: string, movieId: number) => Promise<void>;
@@ -102,9 +105,14 @@ export function useLists(): UseLists {
     },
   });
 
-  const updateMutation = useMutation<List, Error, List, { previous: ListsQueryData | undefined }>({
+  const updateMutation = useMutation<
+    List | undefined,
+    Error,
+    List,
+    { previous: ListsQueryData | undefined }
+  >({
     mutationFn: (list) =>
-      repository.update(list).then((res) => res.lists.find((l) => l.id === list.id) ?? list),
+      repository.update(list).then((res) => res.lists.find((l) => l.id === list.id)),
     onMutate: async (list) => {
       await queryClient.cancelQueries({ queryKey: LISTS_QUERY_KEY });
       const previous = queryClient.getQueryData<ListsQueryData>(LISTS_QUERY_KEY);

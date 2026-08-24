@@ -126,8 +126,6 @@ export const copy = {
     createTitle: 'Create a list',
     createDescription:
       'Group the movies you love into themed lists. You can add movies to a list from any detail page.',
-    editTitle: 'Edit list',
-    editDescription: 'Rename the list or update its description.',
     createAria: 'List creation form',
     nameLabel: 'List name',
     nameHelp: 'Between 1 and 50 characters.',
@@ -137,10 +135,8 @@ export const copy = {
     submitEdit: 'Save changes',
     submitInFlight: 'Saving…',
     submitSuccessCreate: 'List created',
-    submitSuccessEdit: 'Changes saved',
     cancel: 'Cancel',
     remove: 'Delete list',
-    removeConfirm: 'Delete this list?',
     backToLists: 'Back to my lists',
     loading: 'Loading your lists…',
     loadingAria: 'Loading user lists',
@@ -155,7 +151,6 @@ export const copy = {
     noMoviesInList: 'This list has no movies yet.',
     noMoviesInLibraryHint:
       'Save movies to your cineteca first, then add them to this list from the detail page.',
-    movieAlreadyInList: 'Already in this list',
     addMovie: 'Add to list',
     removeMovie: 'Remove from list',
     libraryMoviesHeading: 'Your saved movies',

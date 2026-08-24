@@ -159,4 +159,19 @@ describe('ListDetailPage', () => {
     const parsed = stored === null ? [] : (JSON.parse(stored) as unknown[]);
     expect(parsed).toEqual([]);
   });
+
+  it('sets the document title to the list name on a successful render', async () => {
+    seedListAndLibrary();
+    renderAt();
+    await screen.findByRole('heading', { name: '90s noir', level: 1 });
+    expect(document.title).toBe(`${copy.lists.title}: 90s noir`);
+  });
+
+  it('sets the document title to "List not found" when the list is missing', async () => {
+    // Regression: previously the title stayed on "Loading list"
+    // after the not-found empty state rendered.
+    renderAt('/my-lists/00000000-0000-4000-8000-000000000000');
+    await screen.findByRole('heading', { name: copy.lists.notFoundTitle, level: 1 });
+    expect(document.title).toBe(copy.lists.notFoundTitle);
+  });
 });

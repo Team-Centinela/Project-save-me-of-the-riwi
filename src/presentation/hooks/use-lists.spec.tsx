@@ -48,11 +48,12 @@ class InMemoryRepository implements ListsRepository {
   }
   update(list: List): Promise<Lists> {
     if (this.shouldFail) return Promise.reject(new Error('storage failure'));
+    if (!this.store.some((l) => l.id === list.id)) {
+      return Promise.resolve({ lists: this.store });
+    }
     const next = this.store.map((l) => (l.id === list.id ? list : l));
-    const exists = this.store.some((l) => l.id === list.id);
-    const final = exists ? next : [...this.store, list];
-    this.store = final;
-    return Promise.resolve({ lists: final });
+    this.store = next;
+    return Promise.resolve({ lists: next });
   }
   remove(id: string): Promise<Lists> {
     if (this.shouldFail) return Promise.reject(new Error('storage failure'));
@@ -259,6 +260,23 @@ describe('useLists', () => {
     await waitFor(() => {
       expect(result.current.getList(baseList().id)?.name).toBe('Renamed');
     });
+  });
+
+  it('update is a no-op when the list does not exist in the cache', async () => {
+    await setRepository();
+    const wrapper = makeWrapper();
+    const { result } = renderHook(() => useLists(), { wrapper });
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+    // No create — the cache is empty.
+    let updated: List | undefined;
+    await act(async () => {
+      updated = await result.current.update(baseList({ name: 'Should not appear' }));
+    });
+    expect(updated).toBeUndefined();
+    expect(result.current.lists).toEqual([]);
+    expect(result.current.getList(baseList().id)).toBeUndefined();
   });
 
   it('rolls the cache back when removeMovie throws', async () => {

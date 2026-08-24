@@ -85,11 +85,21 @@ describe('LocalListsRepository', () => {
       expect(result.lists[0]?.name).toBe('90s noir (re-edited)');
     });
 
-    it('update throws when the list does not exist (create is the entry point)', async () => {
-      // `update` falls back to `create` so a renamed id never
-      // orphans the user's data. The new list is appended.
+    it('update is a no-op when the list does not exist', async () => {
+      // Per the port contract, `update` does not upsert: a missing
+      // id stays missing. The caller is expected to `create` the
+      // list first. The current collection is returned unchanged.
       const result = await repo.update(baseList({ id: '22222222-2222-4222-8222-222222222222' }));
+      expect(result.lists).toEqual([]);
+    });
+
+    it('update is a no-op against an existing collection without modifying it', async () => {
+      await repo.create(baseList());
+      const result = await repo.update(
+        baseList({ id: '22222222-2222-4222-8222-222222222222', name: 'Should not appear' }),
+      );
       expect(result.lists.length).toBe(1);
+      expect(result.lists[0]?.name).toBe('90s noir');
     });
 
     it('update bumps updatedAt on the matched list', async () => {

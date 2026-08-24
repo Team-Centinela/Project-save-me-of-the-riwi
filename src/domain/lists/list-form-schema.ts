@@ -22,13 +22,16 @@
 import { z } from 'zod';
 
 export const listFormSchema = z.object({
+  // react-hook-form's text inputs always produce strings, so the
+  // `z.string({ message })` branch is unreachable. The min/max
+  // checks own the per-rule Spanish messages.
   name: z
-    .string({ message: 'El nombre es obligatorio.' })
+    .string()
     .min(1, { message: 'El nombre es obligatorio.' })
     .max(50, { message: 'El nombre no puede tener más de 50 caracteres.' })
     .trim(),
   description: z
-    .string({ message: 'La descripción no puede tener más de 20 caracteres.' })
+    .string()
     .max(20, { message: 'La descripción no puede tener más de 20 caracteres.' })
     .trim(),
 });

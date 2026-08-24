@@ -115,8 +115,14 @@ export class LocalListsRepository implements ListsRepository {
 
   async update(list: List): Promise<Lists> {
     const { lists } = await this.readWithDiagnostics();
-    const idx = lists.lists.findIndex((l) => l.id === list.id);
-    if (idx === -1) return this.create(list);
+    // Per the port contract: `update` is a no-op when the list is
+    // not present. The caller is expected to have created the list
+    // first; a silent upsert would hide bugs (a renamed id would
+    // resurrect a different list rather than update the one the
+    // user expects).
+    if (!lists.lists.some((l) => l.id === list.id)) {
+      return { lists: lists.lists };
+    }
     const next = lists.lists.map((l) => (l.id === list.id ? { ...list, updatedAt: nowIso() } : l));
     return this.writeAll(next);
   }
