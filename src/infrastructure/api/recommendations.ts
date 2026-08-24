@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { tmdbHttpClient } from '@/infrastructure/http/client';
-import { tmdbMovieSummarySchema, toMovieSummary } from './_shared';
+import { clampPage, parseWith, tmdbMovieSummarySchema, toMovieSummary } from './_shared';
 import { type MovieSummary } from '@/domain/movie/movie-summary';
 import { type PaginatedList } from '@/domain/movie/paginated';
 
@@ -39,12 +39,19 @@ function toPaginatedMovies(
 export function getMovieRecommendations(
   params: MovieRecommendationsParams,
 ): Promise<PaginatedList<MovieSummary>> {
+  const page = clampPage(params.page);
   const query: Record<string, number> = {
-    ...(params.page !== undefined ? { page: params.page } : {}),
+    ...(page !== undefined ? { page } : {}),
   };
   const config = Object.keys(query).length > 0 ? { params: query } : undefined;
   return tmdbHttpClient
     .get<unknown>(`/3/movie/${String(params.id)}/recommendations`, config)
-    .then((data) => recommendationsResponseSchema.parse(data))
+    .then((data) =>
+      parseWith(
+        recommendationsResponseSchema,
+        data,
+        `/3/movie/${String(params.id)}/recommendations`,
+      ),
+    )
     .then((parsed) => toPaginatedMovies(parsed));
 }

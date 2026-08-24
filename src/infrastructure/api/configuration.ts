@@ -24,6 +24,7 @@
 
 import { z } from 'zod';
 import { tmdbHttpClient } from '@/infrastructure/http/client';
+import { parseWith } from './_shared';
 import type { AppConfiguration } from '@/domain/configuration/app-configuration';
 
 // Zod schema for the TMDB /configuration response. Only the fields
@@ -69,7 +70,7 @@ let cached: Promise<AppConfiguration> | undefined;
 function fetchAndParse(): Promise<AppConfiguration> {
   return tmdbHttpClient
     .get<unknown>('/3/configuration')
-    .then((data) => configurationResponseSchema.parse(data))
+    .then((data) => parseWith(configurationResponseSchema, data, '/3/configuration'))
     .then(toAppConfiguration);
 }
 
@@ -78,9 +79,9 @@ function fetchAndParse(): Promise<AppConfiguration> {
  * successful read; subsequent calls return the same promise so the
  * network is hit once per app lifetime.
  *
- * Throws a ZodError if TMDB returns a response that no longer
- * matches the expected shape. Errors raised by the HTTP client
- * (rate limits, network failures) propagate unchanged as
+ * Throws a `TmdbSchemaError` if TMDB returns a response that no
+ * longer matches the expected shape. Errors raised by the HTTP
+ * client (rate limits, network failures) propagate unchanged as
  * `TmdbHttpError`.
  */
 export function getAppConfiguration(): Promise<AppConfiguration> {

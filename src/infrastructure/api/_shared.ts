@@ -22,6 +22,85 @@ import { type RatingReliability } from '@/domain/rating/rating-reliability';
 import { type Trailer } from '@/domain/movie/trailer';
 
 // =============================================================================
+// Boundary errors + shared parsing
+// =============================================================================
+//
+// A broken field in a TMDB response must surface as a typed,
+// readable boundary error — never as a raw `ZodError` dump. This
+// mirrors the HTTP edge: network failures become `TmdbHttpError`
+// (see `infrastructure/http/errors.ts`), shape failures become
+// `TmdbSchemaError`.
+
+/**
+ * Thrown when a TMDB response does not match its documented shape.
+ * Carries the endpoint that lied plus a short list of human-readable
+ * issues so logs point at the actual drift instead of a parser dump.
+ */
+export class TmdbSchemaError extends Error {
+  override name = 'TmdbSchemaError' as const;
+  /** The endpoint whose response failed validation, e.g. `/3/discover/movie`. */
+  readonly endpoint: string;
+  /** Human-readable rendering of every failing path. */
+  readonly issues: readonly string[];
+
+  constructor(endpoint: string, cause: z.ZodError) {
+    const issues = cause.issues.map((issue) => {
+      const path = issue.path.length > 0 ? issue.path.join('.') : '<root>';
+      return `${path}: ${issue.message}`;
+    });
+    super(
+      `TMDB response from ${endpoint} failed validation (${String(issues.length)} issue(s)): ${issues[0] ?? 'unknown'}`,
+    );
+    this.endpoint = endpoint;
+    this.issues = issues;
+    this.cause = cause;
+  }
+}
+
+/**
+ * Parse untrusted data against a Zod schema at the API boundary.
+ * On failure, throws `TmdbSchemaError` (never a raw `ZodError`) so
+ * callers pattern-match one boundary error family, like they do
+ * for `TmdbHttpError`.
+ */
+export function parseWith<T>(schema: z.ZodType<T>, data: unknown, endpoint: string): T {
+  try {
+    return schema.parse(data);
+  } catch (cause: unknown) {
+    if (cause instanceof z.ZodError) {
+      throw new TmdbSchemaError(endpoint, cause);
+    }
+    throw cause;
+  }
+}
+
+// =============================================================================
+// Pagination guard
+// =============================================================================
+
+/**
+ * TMDB documents a hard cap of 500 pages on every paginated
+ * endpoint; asking beyond it returns TMDB body code 22. The API
+ * layer clamps instead of trusting the caller so the guarantee
+ * holds even if a presentation-layer guard is added later —
+ * the same belt-and-braces reasoning as the URL parser.
+ */
+export const TMDB_MAX_PAGE = 500;
+
+/**
+ * Clamp a requested page into `[1, TMDB_MAX_PAGE]`.
+ *
+ *   - `undefined` / non-finite → `undefined` (param not sent).
+ *   - `< 1`                    → `1`.
+ *   - `> 500`                  → `500`.
+ *   - fractional values        → truncated toward zero first.
+ */
+export function clampPage(page: number | undefined): number | undefined {
+  if (page === undefined || !Number.isFinite(page)) return undefined;
+  return Math.min(Math.max(Math.trunc(page), 1), TMDB_MAX_PAGE);
+}
+
+// =============================================================================
 // Raw TMDB Zod schemas
 // =============================================================================
 //
@@ -151,7 +230,7 @@ function toTrailers(rawArr: readonly z.infer<typeof tmdbTrailerSchema>[]): reado
  * `released` / `unreleased` boundary to a known instant.
  */
 export function toMovieSummary(raw: unknown, now: Date = new Date()): MovieSummary {
-  const parsed = tmdbMovieSummarySchema.parse(raw);
+  const parsed = parseWith(tmdbMovieSummarySchema, raw, 'shared/movie-summary');
   return {
     id: parsed.id,
     title: parsed.title,
@@ -170,7 +249,7 @@ export function toMovieSummary(raw: unknown, now: Date = new Date()): MovieSumma
  * domain `MovieDetail`. `now` is injectable for testing.
  */
 export function toMovieDetail(raw: unknown, now: Date = new Date()): MovieDetail {
-  const parsed = tmdbMovieDetailFullSchema.parse(raw);
+  const parsed = parseWith(tmdbMovieDetailFullSchema, raw, 'shared/movie-detail');
 
   const cast: NoData<readonly CastMember[]> =
     parsed.credits === null || parsed.credits === undefined
