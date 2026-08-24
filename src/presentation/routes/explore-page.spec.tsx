@@ -24,6 +24,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AppProviders } from '@/presentation/providers/app-providers';
 import { ExplorePage } from './explore-page';
 import { server } from '@/test/msw/server';
+import { formatViolations, runAxe } from '@/test/axe';
 
 const sampleSummary = (overrides: Record<string, unknown> = {}) => ({
   id: 27205,
@@ -290,6 +291,15 @@ describe('ExplorePage', () => {
       expect(hint).toBeInTheDocument();
       // The screen still renders the grid (it does not crash).
       expect(screen.getByTestId('movie-grid')).toBeInTheDocument();
+    });
+  });
+
+  describe('accessibility', () => {
+    it('has no axe-core violations on the success render', async () => {
+      const { container } = renderAt('/explore');
+      await screen.findByTestId('movie-grid');
+      const violations = await runAxe(container);
+      expect(violations, formatViolations(violations)).toEqual([]);
     });
   });
 });

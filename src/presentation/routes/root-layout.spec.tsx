@@ -8,6 +8,7 @@
 import { render, screen } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { describe, expect, it } from 'vitest';
+import { formatViolations, runAxe } from '@/test/axe';
 import { copy } from '../copy/strings';
 import { RootLayout } from './root-layout';
 
@@ -54,5 +55,12 @@ describe('RootLayout', () => {
   it('renders a primary navigation landmark', () => {
     renderWith('/');
     expect(screen.getByRole('navigation')).toBeInTheDocument();
+  });
+
+  it('has no axe-core violations on the chrome', async () => {
+    const { container } = renderWith('/');
+    expect(screen.getByRole('link', { name: copy.brand })).toBeInTheDocument();
+    const violations = await runAxe(container);
+    expect(violations, formatViolations(violations)).toEqual([]);
   });
 });

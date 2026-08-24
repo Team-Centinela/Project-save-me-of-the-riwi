@@ -9,6 +9,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useQuery } from '@tanstack/react-query';
 import { describe, expect, it, vi } from 'vitest';
+import { formatViolations, runAxe } from '@/test/axe';
 import { AppProviders } from './app-providers';
 
 const noop = (): void => undefined;
@@ -85,6 +86,22 @@ describe('AppProviders', () => {
     await user.click(screen.getByRole('button', { name: /try again/i }));
 
     expect(screen.getByText('recovered')).toBeInTheDocument();
+    consoleError.mockRestore();
+  });
+
+  it('renders the error fallback without axe violations', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(noop);
+    const Thrower = () => {
+      throw new Error('boom');
+    };
+    const { container } = render(
+      <AppProviders>
+        <Thrower />
+      </AppProviders>,
+    );
+    expect(screen.getByRole('heading', { name: /something went wrong/i })).toBeInTheDocument();
+    const violations = await runAxe(container);
+    expect(violations, formatViolations(violations)).toEqual([]);
     consoleError.mockRestore();
   });
 });

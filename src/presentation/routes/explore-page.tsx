@@ -222,7 +222,7 @@ export function ExplorePage(): ReactNode {
           data-testid="invalid-params-hint"
           className="mt-3 text-xs text-status-unreleased"
         >
-          Some filters in the URL were ignored because they were out of range.
+          {copy.explore.invalidParamsHint}
         </p>
       )}
 

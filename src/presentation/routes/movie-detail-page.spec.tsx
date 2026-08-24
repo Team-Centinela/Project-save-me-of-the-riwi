@@ -25,6 +25,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AppProviders } from '@/presentation/providers/app-providers';
 import { MovieDetailPage } from './movie-detail-page';
 import { server } from '@/test/msw/server';
+import { formatViolations, runAxe } from '@/test/axe';
 
 const fullDetailFixture = (overrides: Record<string, unknown> = {}) => ({
   id: 27205,
@@ -248,7 +249,7 @@ describe('MovieDetailPage', () => {
       const panel = await screen.findByTestId('movie-meta-panel');
       expect(panel).toBeInTheDocument();
       expect(screen.getByTestId('meta-status')).toHaveTextContent(/released/i);
-      expect(screen.getByTestId('meta-runtime')).toHaveTextContent(/2h 28m/);
+      expect(screen.getByTestId('meta-runtime')).toHaveTextContent(/2 h 28 min/);
       expect(screen.getByTestId('meta-budget')).toHaveTextContent(/\$160,000,000\.00/);
       expect(screen.getByTestId('meta-revenue')).toHaveTextContent(/\$836,800,000\.00/);
     });
@@ -310,6 +311,15 @@ describe('MovieDetailPage', () => {
       );
       renderAt('/movie/27205');
       expect(await screen.findByTestId('recommendations-empty')).toBeInTheDocument();
+    });
+  });
+
+  describe('accessibility', () => {
+    it('has no axe-core violations on the success render', async () => {
+      const { container } = renderAt('/movie/27205');
+      await screen.findByTestId('detail-page');
+      const violations = await runAxe(container);
+      expect(violations, formatViolations(violations)).toEqual([]);
     });
   });
 });

@@ -13,6 +13,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AppProviders } from '@/presentation/providers/app-providers';
 import { HomePage } from './home-page';
 import { server } from '@/test/msw/server';
+import { formatViolations, runAxe } from '@/test/axe';
 
 const sampleSummary = (overrides: Record<string, unknown> = {}) => ({
   id: 27205,
@@ -184,6 +185,15 @@ describe('HomePage', () => {
       renderAt();
       const empty = await screen.findByTestId('home-empty');
       expect(empty).toBeInTheDocument();
+    });
+  });
+
+  describe('accessibility', () => {
+    it('has no axe-core violations on the success render', async () => {
+      const { container } = renderAt();
+      await screen.findByTestId('home-page');
+      const violations = await runAxe(container);
+      expect(violations, formatViolations(violations)).toEqual([]);
     });
   });
 });

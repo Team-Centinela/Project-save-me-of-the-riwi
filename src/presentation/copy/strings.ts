@@ -50,6 +50,7 @@ export const copy = {
     loadMore: 'Load more',
     loading: 'Loading movies…',
     loadingAria: 'Loading explore grid',
+    invalidParamsHint: 'Some filters in the URL were ignored because they were out of range.',
   },
   search: {
     title: 'Search movies',
@@ -87,8 +88,6 @@ export const copy = {
     statusUnknown: 'Unknown',
     releasedOn: (date: string) => `Released on ${date}`,
     expectedOn: (date: string) => `Expected on ${date}`,
-    voteCount: (count: string) => `${count} votes`,
-    voteCountAbsent: 'No ratings',
     loading: 'Loading movie…',
     loadingAria: 'Loading movie details',
     notFoundTitle: 'Movie not found',
@@ -97,10 +96,30 @@ export const copy = {
   movieCard: {
     noPoster: 'No poster',
     noYear: '—',
+    noYearAria: 'no year',
     noRating: 'No rating',
     unreleased: 'Upcoming',
     accessibleName: (title: string, year: string, ratingLabel: string) =>
       `${title}, ${year}, ${ratingLabel}`,
+  },
+  format: {
+    // Duration units. The numbers come from `Intl.NumberFormat`;
+    // the units stay English ("h", "min") because the issue
+    // contracts "2 h 15 min" as the canonical shape and the
+    // short forms work in es, en, and de without further work.
+    durationHour: (n: string) => `${n} h`,
+    durationMinute: (n: string) => `${n} min`,
+    durationHourMinute: (hours: string, minutes: string) => `${hours} h ${minutes} min`,
+    durationMinuteOnly: (n: string) => `${n} min`,
+    // Vote counts. The numeric part comes from
+    // `Intl.NumberFormat` (which adds the thousands separator);
+    // the plural form (`vote` / `votes`) is chosen here so the
+    // wording can be swapped per locale without touching the
+    // formatter. The function takes the formatted label plus the
+    // raw count.
+    voteCount: (formattedLabel: string, count: number) =>
+      count === 1 ? `${formattedLabel} vote` : `${formattedLabel} votes`,
+    voteCountAbsent: 'No ratings',
   },
   library: {
     title: 'My Cineteca',

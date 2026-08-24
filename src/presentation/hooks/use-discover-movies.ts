@@ -4,6 +4,15 @@
 // filter starts a fresh page-1 fetch. Pagination uses TanStack
 // Query's `useInfiniteQuery`; the page token is the next page
 // number, or `undefined` once the last page is reached.
+//
+// TMDB caps responses at 500 pages (`/configuration` documents
+// it and `use-explore-filters.ts` enforces it on the URL). The
+// `getNextPageParam` callback also enforces it client-side so a
+// malformed server response (e.g. one that advertises 600 pages
+// while individual pages 501-600 are missing) cannot drive the
+// query into a loop. The two layers are belt-and-braces: the URL
+// guard protects the user from a hand-typed `?page=501`, the
+// hook guard protects the user from a buggy `total_pages` value.
 
 import { useInfiniteQuery } from '@tanstack/react-query';
 import {
@@ -15,6 +24,8 @@ import { type MovieSummary } from '@/domain/movie/movie-summary';
 import { type PaginatedList } from '@/domain/movie/paginated';
 
 const TEN_MINUTES_MS = 10 * 60 * 1000;
+/** TMDB hard cap for `/discover/movie` responses. */
+export const TMDB_MAX_PAGES = 500;
 
 export interface UseDiscoverMoviesArgs {
   readonly genreIds?: readonly number[];
@@ -42,8 +53,13 @@ export function useDiscoverMovies(filters: UseDiscoverMoviesArgs) {
     queryFn: ({ pageParam }) =>
       discoverMovies({ ...discoverFilters, page: typeof pageParam === 'number' ? pageParam : 1 }),
     initialPageParam: 1,
-    getNextPageParam: (lastPage) =>
-      lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
+    getNextPageParam: (lastPage) => {
+      // Hard cap: even if `total_pages` is bigger, we never ask
+      // for page > TMDB_MAX_PAGES. This is the defensive half of
+      // the two-layer guard.
+      if (lastPage.page >= TMDB_MAX_PAGES) return undefined;
+      return lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined;
+    },
     staleTime: TEN_MINUTES_MS,
   });
 }

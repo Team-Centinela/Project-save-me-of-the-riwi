@@ -12,6 +12,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { AppProviders } from '@/presentation/providers/app-providers';
 import { copy } from '@/presentation/copy/strings';
 import { server } from '@/test/msw/server';
+import { formatViolations, runAxe } from '@/test/axe';
 import { ListDetailPage } from './list-detail-page';
 import { ListsPage } from './lists-page';
 
@@ -173,5 +174,15 @@ describe('ListDetailPage', () => {
     renderAt('/my-lists/00000000-0000-4000-8000-000000000000');
     await screen.findByRole('heading', { name: copy.lists.notFoundTitle, level: 1 });
     expect(document.title).toBe(copy.lists.notFoundTitle);
+  });
+
+  describe('accessibility', () => {
+    it('has no axe-core violations on the success render', async () => {
+      seedListAndLibrary();
+      const { container } = renderAt();
+      await screen.findByRole('heading', { name: '90s noir', level: 1 });
+      const violations = await runAxe(container);
+      expect(violations, formatViolations(violations)).toEqual([]);
+    });
   });
 });
