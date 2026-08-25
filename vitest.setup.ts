@@ -13,6 +13,28 @@ vi.stubEnv('VITE_TMDB_READ_TOKEN', 'a'.repeat(64));
 // `onUnhandledRequest: 'error'` is what makes MSW useful: a request that
 // nobody simulated blows up the test instead of going to the real network.
 beforeAll(() => {
+  // Node 25+ ships a built-in `localStorage` global as part of the
+  // Web Storage API. With v25.0.0 the global is unflagged (v22 only
+  // exposes it behind `--experimental-webstorage`; v26 will throw a
+  // DOMException instead of returning an empty object). When
+  // `--localstorage-file` is not provided to a valid path on v25,
+  // the global is an empty stub object with no methods
+  // (`setItem`/`getItem`/`clear`/etc. are all `undefined`). Vitest's
+  // `populateGlobal` walks the jsdom window and only assigns keys that
+  // are NOT already on `global` (or are in its allow-list); since
+  // `localStorage` is neither, vitest skips it and Node's stub wins.
+  // Every spec that touches `window.localStorage` then explodes with
+  // "localStorage.clear is not a function". Replacing the stub with
+  // jsdom's real Storage at file setup restores the expected behaviour
+  // and is a no-op on Node versions where `localStorage` is undefined.
+  const jsdomInstance = (globalThis as { jsdom?: { window: { localStorage: Storage } } }).jsdom;
+  if (jsdomInstance) {
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: jsdomInstance.window.localStorage,
+      writable: true,
+      configurable: true,
+    });
+  }
   server.listen({ onUnhandledRequest: 'error' });
 });
 afterEach(async () => {

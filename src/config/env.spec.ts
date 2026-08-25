@@ -28,6 +28,15 @@ describe('config/env', () => {
   });
 
   it('throws when VITE_TMDB_READ_TOKEN is missing', async () => {
+    // Stub explicitly with empty string: vi.unstubAllEnvs() (in
+    // beforeEach above) only restores values that were stubbed by
+    // vi.stubEnv, so a real CI secret in process.env would survive
+    // unstub and make this test pass-through (resolves with the
+    // secret instead of rejecting). Stubbing with '' is semantically
+    // equivalent to "missing" here because Zod's z.string().min(40)
+    // rejects the empty string with the same "Invalid environment
+    // configuration" error the test asserts on.
+    vi.stubEnv('VITE_TMDB_READ_TOKEN', '');
     await expect(import('./env')).rejects.toThrow(/Invalid environment configuration/);
   });
 
