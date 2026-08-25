@@ -5,6 +5,11 @@ import { server } from '@/test/msw/server';
 const BASE = 'https://api.tmdb.test';
 const TOKEN = 'a'.repeat(64);
 
+// Real TMDB `/movie/{id}` shape: this endpoint returns full `genres`
+// objects but no `genre_ids` (that field is reserved for the
+// summary endpoints — discover, search, trending, recommendations).
+// An earlier fixture fabricated `genre_ids` to satisfy the schema,
+// which masked the schema-vs-response drift that broke the page.
 const detailFixture = {
   id: 27205,
   title: 'Inception',
@@ -14,7 +19,6 @@ const detailFixture = {
   release_date: '2010-07-16',
   vote_average: 8.4,
   vote_count: 30_000,
-  genre_ids: [28, 12],
   tagline: 'Your mind is the scene of the crime.',
   runtime: 148,
   genres: [
@@ -80,6 +84,12 @@ describe('infrastructure/api/movie', () => {
       { id: 28, name: 'Action' },
       { id: 12, name: 'Adventure' },
     ]);
+    // Regression: `/movie/{id}` does not return `genre_ids`. The
+    // mapper derives `genreIds` from the `genres[]` objects. If the
+    // schema starts requiring `genre_ids` again, this assertion will
+    // fail (the call above will reject with TmdbSchemaError) and the
+    // page will start rendering its error state for every movie.
+    expect(detail.genreIds).toEqual([28, 12]);
     // Without the append flag, cast and trailers are absent.
     expect(detail.cast.kind).toBe('absent');
     expect(detail.trailers.kind).toBe('absent');
@@ -198,7 +208,6 @@ describe('infrastructure/api/movie', () => {
           genres: [],
           budget: 0,
           revenue: 0,
-          genre_ids: [],
         }),
       ),
     );
