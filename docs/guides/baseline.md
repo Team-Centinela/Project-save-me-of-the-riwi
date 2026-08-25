@@ -271,6 +271,28 @@ pnpm check-types
 git add -A && git commit -m "chore: add project dependencies"
 ```
 
+### 5.6 Convención de pinning de versiones
+
+Decidida en el issue [#38](https://github.com/Team-Centinela/Project-save-me-of-the-riwi/issues/38) y codificada en `CONTRIBUTING.md`. Una sola regla con una excepción:
+
+```
+^MAJOR.MINOR.PATCH   para toda dependencia
+~MAJOR.MINOR.PATCH   solo cuando un peer-dep upstream lo fuerce
+exact MAJOR.MINOR.PATCH   nunca, por defecto
+```
+
+**Por qué `^` por defecto.** El lockfile (`pnpm-lock.yaml`) sigue anclando la versión exacta instalada en cada máquina y en CI; la convención solo cambia cómo la **spec** describe el rango aceptable. `^` da parches y minors automáticos; Dependabot lo respeta.
+
+**Por qué `~` solo cuando un peer-dep lo fuerce.** Hoy la única dep en esta situación es `typescript` (forzada por `typescript-eslint@8.67.0` con peer `typescript: ">=4.8.4 <6.1.0"`). Cualquier otra dep en la misma situación debe documentar el porqué en el cuerpo del commit, no usarse como columna de política.
+
+**Por qué nunca exact por defecto.** Un pin exacto convierte cada bugfix transitivo en un PR manual. La herramienta (el lockfile) es quien guarda la versión instalada; el `package.json` solo necesita declarar el rango aceptable.
+
+**Excepciones.** `eslint-plugin-jsx-a11y` queda pinned exacto hasta que jsx-a11y publique una versión con peer `eslint: ^10` (track en issue aparte, fuera del scope de #38). Cualquier otra excepción debe demostrar la necesidad y escribir el razonamiento en el cuerpo del commit.
+
+**Qué significa esto para un PR futuro de dependencias.** Elegir la última estable del registry que cumpla `^<la versión que el proyecto usa hoy>`. Si pinear `^` viola un peer-dep upstream (de la dep que se está agregando, o de una dep ya instalada), pinear `~` y dejar una nota de una línea en el cuerpo del PR.
+
+**Tooling vs runtime.** Misma regla. Las herramientas (linters, type checkers, test runners) son _más propensas_ a chocar con peer ceilings que las librerías de runtime, así que **chequear `peerDependencies` antes de pinear `^` en una herramienta** — el próximo minor de `eslint`, `typescript` o `vitest` puede forzar un bump de un plugin compañero.
+
 ---
 
 ## Paso 6 · Tailwind y los tokens del tema
