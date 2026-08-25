@@ -128,9 +128,9 @@ export function ConfirmDialog({
         <h2 id={titleId} className="text-lg font-semibold text-ink">
           {title}
         </h2>
-        <p id={bodyId} className="text-sm text-ink-muted">
+        <div id={bodyId} className="text-sm text-ink-muted">
           {body}
-        </p>
+        </div>
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
             ref={cancelRef}
