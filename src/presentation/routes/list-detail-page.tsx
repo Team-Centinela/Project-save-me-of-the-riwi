@@ -166,24 +166,26 @@ export function ListDetailPage(): ReactNode {
               {copy.lists.moviesCount(inListEntries.length)}
             </p>
           </div>
-          <Link
-            to={`/my-lists/${id}/edit`}
-            className="inline-flex min-h-touch items-center justify-center rounded-card border border-ink-muted/30 px-5 text-sm font-medium text-ink transition-colors hover:border-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-          >
-            {copy.lists.editTitle}
-          </Link>
-          <button
-            type="button"
-            onClick={() => {
-              setConfirmOpen(true);
-            }}
-            disabled={lists.isRemoving}
-            aria-label={copy.lists.remove}
-            aria-haspopup="dialog"
-            className="inline-flex min-h-touch items-center justify-center rounded-card border border-danger/40 px-5 text-sm font-medium text-danger transition-opacity hover:bg-danger/10 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-          >
-            {copy.lists.remove}
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              to={`/my-lists/${id}/edit`}
+              className="inline-flex min-h-touch items-center justify-center rounded-card border border-ink-muted/30 px-5 text-sm font-medium text-ink transition-colors hover:border-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            >
+              {copy.lists.editTitle}
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                setConfirmOpen(true);
+              }}
+              disabled={lists.isRemoving}
+              aria-label={copy.lists.remove}
+              aria-haspopup="dialog"
+              className="inline-flex min-h-touch items-center justify-center rounded-card border border-danger/40 px-5 text-sm font-medium text-danger transition-opacity hover:bg-danger/10 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            >
+              {copy.lists.remove}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -261,7 +263,12 @@ export function ListDetailPage(): ReactNode {
       <ConfirmDialog
         open={confirmOpen}
         title={copy.lists.deleteDialogTitle}
-        body={`${copy.lists.removeConfirm} ${copy.lists.deleteDialogBody}`}
+        body={
+          <>
+            <p>{copy.lists.removeConfirm}</p>
+            <p>{copy.lists.deleteDialogBody}</p>
+          </>
+        }
         confirmLabel={copy.lists.remove}
         confirmAriaLabel={`${copy.lists.remove}: ${list.name}`}
         onConfirm={() => {
