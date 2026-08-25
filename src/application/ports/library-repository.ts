@@ -22,7 +22,7 @@ export interface Library {
 
 export class LibraryCorruptedError extends Error {
   readonly key: string;
-  readonly cause: unknown;
+  override readonly cause: unknown;
   constructor(key: string, cause: unknown) {
     super(`Library at "${key}" failed validation and was discarded.`);
     this.name = 'LibraryCorruptedError';

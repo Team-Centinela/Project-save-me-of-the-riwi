@@ -38,7 +38,7 @@ export interface Lists {
 
 export class ListsCorruptedError extends Error {
   readonly key: string;
-  readonly cause: unknown;
+  override readonly cause: unknown;
   constructor(key: string, cause: unknown) {
     super(`Lists at "${key}" failed validation and were discarded.`);
     this.name = 'ListsCorruptedError';
