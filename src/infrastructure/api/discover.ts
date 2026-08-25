@@ -23,7 +23,9 @@ export type DiscoverSortOption =
   | 'vote_average.asc'
   | 'vote_average.desc'
   | 'vote_count.asc'
-  | 'vote_count.desc';
+  | 'vote_count.desc'
+  | 'title.asc'
+  | 'title.desc';
 
 export interface DiscoverFilters {
   /** Comma-separated list of TMDB genre ids, e.g. `[28, 12]`. */
