@@ -11,7 +11,8 @@
 //   - `/my-cineteca`     → LibraryPage. The user's local library.
 //   - `/my-lists`        → ListsPage. The user's themed lists overview.
 //   - `/my-lists/new`    → ListCreatePage. The create-list form.
-//   - `/my-lists/:listId`→ ListDetailPage. The list detail with add/remove.
+//   - `/my-lists/:listId`       → ListDetailPage. The list detail with add/remove.
+//   - `/my-lists/:listId/edit`  → ListEditPage. The edit-list form.
 //   - `*`                → NotFoundPage. Any path that does not match a
 //                          defined route renders here, inside the same
 //                          chrome as the rest of the app.
@@ -22,26 +23,35 @@ import { HomePage } from './home-page';
 import { LibraryPage } from './library-page';
 import { ListCreatePage } from './list-create-page';
 import { ListDetailPage } from './list-detail-page';
+import { ListEditPage } from './list-edit-page';
 import { ListsPage } from './lists-page';
 import { MovieDetailPage } from './movie-detail-page';
 import { NotFoundPage } from './not-found-page';
 import { RootLayout } from './root-layout';
 import { SearchPage } from './search-page';
 
-export const router = createBrowserRouter([
-  {
-    path: '/',
-    Component: RootLayout,
-    children: [
-      { index: true, Component: HomePage },
-      { path: 'explore', Component: ExplorePage },
-      { path: 'search', Component: SearchPage },
-      { path: 'movie/:id', Component: MovieDetailPage },
-      { path: 'my-cineteca', Component: LibraryPage },
-      { path: 'my-lists', Component: ListsPage },
-      { path: 'my-lists/new', Component: ListCreatePage },
-      { path: 'my-lists/:listId', Component: ListDetailPage },
-      { path: '*', Component: NotFoundPage },
-    ],
-  },
-]);
+// The basename comes from Vite's `base` (see vite.config.ts): '/' in dev,
+// '/<repo>/' on GitHub Pages. Without it the router would try to match the
+// full pathname including the repo prefix and every visit would land on
+// the wildcard NotFoundPage.
+export const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      Component: RootLayout,
+      children: [
+        { index: true, Component: HomePage },
+        { path: 'explore', Component: ExplorePage },
+        { path: 'search', Component: SearchPage },
+        { path: 'movie/:id', Component: MovieDetailPage },
+        { path: 'my-cineteca', Component: LibraryPage },
+        { path: 'my-lists', Component: ListsPage },
+        { path: 'my-lists/new', Component: ListCreatePage },
+        { path: 'my-lists/:listId', Component: ListDetailPage },
+        { path: 'my-lists/:listId/edit', Component: ListEditPage },
+        { path: '*', Component: NotFoundPage },
+      ],
+    },
+  ],
+  { basename: import.meta.env.BASE_URL },
+);

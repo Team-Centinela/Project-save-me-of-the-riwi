@@ -10,12 +10,13 @@ If you are looking for **what the project is** or **how to run it**, see the [RE
 
 1. [Branching model](#branching-model)
 2. [Commit and PR title convention](#commit-and-pr-title-convention)
-3. [Pull request process](#pull-request-process)
-4. [Quality gate](#quality-gate)
-5. [Architecture rules](#architecture-rules)
-6. [Local setup](#local-setup)
-7. [Reporting bugs and requesting features](#reporting-bugs-and-requesting-features)
-8. [References](#references)
+3. [Version pinning convention](#version-pinning-convention)
+4. [Pull request process](#pull-request-process)
+5. [Quality gate](#quality-gate)
+6. [Architecture rules](#architecture-rules)
+7. [Local setup](#local-setup)
+8. [Reporting bugs and requesting features](#reporting-bugs-and-requesting-features)
+9. [References](#references)
 
 ---
 
@@ -234,6 +235,47 @@ feat(infra)!: switch HTTP client from fetch to axios
 BREAKING CHANGE: replaces the native fetch wrapper. Existing
 interceptors must be ported to axios interceptors.
 ```
+
+---
+
+## Version pinning convention
+
+Decided in [#38](https://github.com/Team-Centinela/Project-save-me-of-the-riwi/issues/38) and codified here so every contributor pastes the same shape.
+
+### The rule
+
+```
+^MAJOR.MINOR.PATCH   for every dependency
+~MAJOR.MINOR.PATCH   only when an upstream peer-dep forces it
+exact MAJOR.MINOR.PATCH   never, by default
+```
+
+One rule. One exception (peer-dep ceiling). No "runtime vs tooling" split — the peer-dep clause is dep-type-agnostic and already covers the only tooling case we have today (`typescript`, forced to `~` by `typescript-eslint`'s `typescript: ">=4.8.4 <6.1.0"` peer).
+
+### Why `^` by default
+
+Auto-patches and auto-minors within the same major. The lockfile still pins the exact installed version on every contributor's machine and in CI, so reproducibility is not sacrificed — the policy only changes how the **spec** describes the range. Dependabot reads this convention.
+
+### Why `~` only when forced
+
+`~` is the documented escape hatch when the next minor would violate an upstream peer-dep. Today the only such dep is `typescript` (forced by `typescript-eslint`'s `<6.1.0` peer). When the next dep hits a similar ceiling, document it in the commit body — don't promote it to a separate policy column.
+
+Tooling (linters, type checkers, test runners) is **more likely** to hit peer ceilings than runtime libraries. **Check upstream `peerDependencies` before pinning `^` on a tool** — the next minor of `eslint`, `typescript`, or `vitest` may force a bump of an internal companion plugin.
+
+### Why never exact by default
+
+Exact pins make every transitive bugfix a manual PR. They also block the in-place upgrades Dependabot would otherwise produce for free. The lockfile (`pnpm-lock.yaml`) is the source of truth for what's actually installed — the spec only needs to describe the **acceptable range**, and `^` is that range.
+
+### Exceptions
+
+- **`eslint-plugin-jsx-a11y`** is currently pinned exact. Its peer-dep ceiling on `eslint` (currently `^3..^9`) is older than the ESLint version we ship (`10.8.1`); loosening its pin does not fix the underlying mismatch, and tracking the issue separately is cleaner than overloading the convention. Tracked in the follow-up issue filed alongside #38.
+- Any other dep that a reviewer can demonstrate needs exact pinning **and** that the reasoning is written into the commit body.
+
+### What this means for a new deps PR
+
+1. Pick the latest stable from the registry that matches `^<the version the project ships today>`.
+2. If pinning `^` would violate an upstream peer-dep on the dep you are adding (or on a dep already shipped), pin `~` and add a one-line note in the PR body.
+3. Never ship a new dep at exact unless it's the jsx-a11y exception above.
 
 ---
 
