@@ -42,18 +42,16 @@ export function ListEditPage(): ReactNode {
     list !== undefined ? `${copy.lists.editTitle}: ${list.name}` : copy.lists.editTitle,
   );
 
-  const current = list;
-
   const handleSubmit = useCallback(
     async (values: ListFormValues): Promise<void> => {
-      if (id === null || current === undefined) return;
+      if (id === null || list === undefined) return;
       setErrorMessage(undefined);
       try {
         // The repository owns `updatedAt`; a no-op (the list was
         // deleted in another tab) resolves with `undefined` per
         // the port contract and is surfaced as an error.
         const updated = await lists.update({
-          ...current,
+          ...list,
           name: values.name.trim(),
           description: values.description.trim(),
         });
@@ -64,10 +62,10 @@ export function ListEditPage(): ReactNode {
         setErrorMessage(copy.lists.errorEdit);
       }
     },
-    [current, id, lists, navigate],
+    [list, id, lists, navigate],
   );
 
-  if (id === null || (!lists.isLoading && current === undefined)) {
+  if (id === null || (!lists.isLoading && list === undefined)) {
     return (
       <section aria-labelledby="list-edit-not-found-title">
         <h1 id="list-edit-not-found-title" className="text-3xl font-semibold text-ink">
@@ -80,7 +78,7 @@ export function ListEditPage(): ReactNode {
     );
   }
 
-  if (lists.isLoading || current === undefined) {
+  if (lists.isLoading || list === undefined) {
     return (
       <section aria-busy="true" aria-label={copy.lists.detailLoadingAria}>
         <h1 className="text-3xl font-semibold text-ink">{copy.lists.editTitle}</h1>
@@ -102,7 +100,7 @@ export function ListEditPage(): ReactNode {
       </header>
       <ListForm
         mode="edit"
-        defaultValues={{ name: current.name, description: current.description }}
+        defaultValues={{ name: list.name, description: list.description }}
         onSubmit={(values) => handleSubmit(values)}
         onCancel={() => {
           void navigate(`/my-lists/${id}`);

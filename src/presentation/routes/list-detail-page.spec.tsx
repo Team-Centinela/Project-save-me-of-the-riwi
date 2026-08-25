@@ -171,11 +171,23 @@ describe('ListDetailPage', () => {
   it('opens a confirmation dialog instead of deleting when the delete button is clicked', async () => {
     const user = userEvent.setup();
     seedListAndLibrary();
-    renderAt();
+    const { container } = renderAt();
     await user.click(await screen.findByRole('button', { name: copy.lists.remove }));
     const dialog = screen.getByRole('alertdialog');
     expect(dialog).toBeInTheDocument();
-    expect(dialog).toHaveTextContent(copy.lists.removeConfirm);
+    // Regression net for the `<p>`-wrapper / nested-`<p>` bug:
+    // the description target must contain both lines of the
+    // multi-paragraph body, not just the first one. If the
+    // wrapper starts as `<p>` again the HTML parser auto-closes
+    // it and `aria-describedby` ends up pointing at an empty
+    // element — this assertion catches that at the spec level.
+    const describedById = dialog.getAttribute('aria-describedby');
+    expect(describedById).not.toBeNull();
+    if (describedById === null) throw new Error('aria-describedby should be set');
+    const target = container.querySelector(`#${describedById}`);
+    expect(target).toBeInstanceOf(HTMLDivElement);
+    expect(target).toHaveTextContent(copy.lists.removeConfirm);
+    expect(target).toHaveTextContent(copy.lists.deleteDialogBody);
     // Nothing was deleted while the dialog is open.
     expect(window.localStorage.getItem('cineteca:lists:v1')).not.toBeNull();
     expect(

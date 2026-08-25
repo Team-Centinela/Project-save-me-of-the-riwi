@@ -26,7 +26,7 @@ import { copy } from '@/presentation/copy/strings';
 export interface ConfirmDialogProps {
   readonly open: boolean;
   readonly title: string;
-  readonly body: string;
+  readonly body: ReactNode;
   readonly confirmLabel: string;
   /** Accessible name for the confirm button; names what will be destroyed. */
   readonly confirmAriaLabel?: string;
@@ -36,8 +36,13 @@ export interface ConfirmDialogProps {
 }
 
 function focusables(container: HTMLElement): HTMLElement[] {
+  // Scope: a confirm dialog's own controls (two buttons today).
+  // The selector still honours any focusable the parent renders
+  // into these slots, including `[tabindex]`-enabled elements.
   return Array.from(
-    container.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input, textarea'),
+    container.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])',
+    ),
   );
 }
 
@@ -57,6 +62,14 @@ export function ConfirmDialog({
   const cancelRef = useRef<HTMLButtonElement | null>(null);
   // The element to restore focus to when the dialog closes.
   const restoreFocusRef = useRef<HTMLElement | null>(null);
+  // Stashed so the keydown listener below can depend on `[open]`
+  // alone: parents typically pass an inline `onCancel`, and a dep
+  // on the prop itself would re-attach the document listener on
+  // every parent render while the dialog is open.
+  const onCancelRef = useRef(onCancel);
+  useEffect(() => {
+    onCancelRef.current = onCancel;
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -76,7 +89,7 @@ export function ConfirmDialog({
     function handleKeyDown(event: KeyboardEvent): void {
       if (event.key === 'Escape') {
         event.stopPropagation();
-        onCancel();
+        onCancelRef.current();
         return;
       }
       if (event.key !== 'Tab' || dialogRef.current === null) return;
@@ -97,7 +110,7 @@ export function ConfirmDialog({
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [open, onCancel]);
+  }, [open]);
 
   if (!open) return null;
 
@@ -115,9 +128,9 @@ export function ConfirmDialog({
         <h2 id={titleId} className="text-lg font-semibold text-ink">
           {title}
         </h2>
-        <p id={bodyId} className="text-sm text-ink-muted">
+        <div id={bodyId} className="text-sm text-ink-muted">
           {body}
-        </p>
+        </div>
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
             ref={cancelRef}
