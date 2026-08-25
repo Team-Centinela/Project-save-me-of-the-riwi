@@ -153,6 +153,16 @@ const tmdbDetailAppendagesSchema = z.object({
     .optional(),
 });
 
+/**
+ * Schema for the raw `/movie/{id}` TMDB response.
+ *
+ * Note: this endpoint does NOT include `genre_ids` (the summary
+ * endpoints do). The detail endpoint returns `genres: [{id, name}]`
+ * and the mapper derives `genreIds` from those. An earlier draft of
+ * this schema copied `genre_ids` from the summary schema, which made
+ * the real response fail validation and the page render its error
+ * state instead of the movie.
+ */
 export const tmdbMovieDetailFullSchema = z.object({
   id: z.number(),
   title: z.string(),
@@ -162,7 +172,6 @@ export const tmdbMovieDetailFullSchema = z.object({
   release_date: z.union([z.string(), z.null()]),
   vote_average: z.number(),
   vote_count: z.number(),
-  genre_ids: z.array(z.number()),
   tagline: z.union([z.string(), z.null()]),
   runtime: z.union([z.number().nonnegative(), z.null()]),
   genres: z.array(tmdbGenreSchema),
@@ -268,7 +277,7 @@ export function toMovieDetail(raw: unknown, now: Date = new Date()): MovieDetail
     backdropPath: noDataFromNullableString(parsed.backdrop_path),
     state: classifyRelease(parsed.release_date, now),
     rating: toRating(parsed.vote_count, parsed.vote_average),
-    genreIds: parsed.genre_ids,
+    genreIds: parsed.genres.map((g) => g.id),
     tagline: noDataFromNullableString(parsed.tagline),
     runtime: noDataFromNullableNumber(parsed.runtime),
     genres: toGenres(parsed.genres),
