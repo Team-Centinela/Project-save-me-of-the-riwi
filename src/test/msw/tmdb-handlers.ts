@@ -51,8 +51,20 @@ export const TMDB_MOVIE_SUMMARY_FIXTURE = {
   genre_ids: [28, 12, 878],
 };
 
+// The detail endpoint returns full `genres` objects, not the
+// numeric `genre_ids` array (that field is reserved for the
+// summary endpoints — see PR #98). Destructuring-rest drops
+// `genre_ids` so the detail fixture does not inherit a field
+// `/movie/{id}` never sends; each fixture mirrors its own
+// endpoint's shape.
+const {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- intentionally discarded: /movie/{id} never returns genre_ids
+  genre_ids: _discardedGenreIds,
+  ...summaryShape
+} = TMDB_MOVIE_SUMMARY_FIXTURE;
+
 export const TMDB_MOVIE_DETAIL_FIXTURE = {
-  ...TMDB_MOVIE_SUMMARY_FIXTURE,
+  ...summaryShape,
   tagline: 'Your mind is the scene of the crime.',
   runtime: 148,
   genres: [

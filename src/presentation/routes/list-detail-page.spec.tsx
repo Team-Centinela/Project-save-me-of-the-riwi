@@ -150,15 +150,112 @@ describe('ListDetailPage', () => {
     });
   });
 
-  it('navigates back to the overview when the user clicks the delete list button', async () => {
+  it('navigates to the edit page when the user clicks the edit link', async () => {
+    const user = userEvent.setup();
+    seedListAndLibrary();
+    render(
+      <MemoryRouter initialEntries={[`/my-lists/${LIST_ID}`]}>
+        <AppProviders>
+          <Routes>
+            <Route path="/my-lists" element={<ListsPage />} />
+            <Route path="/my-lists/:listId" element={<ListDetailPage />} />
+            <Route path="/my-lists/:listId/edit" element={<div>edit</div>} />
+          </Routes>
+        </AppProviders>
+      </MemoryRouter>,
+    );
+    await user.click(await screen.findByRole('link', { name: copy.lists.editTitle }));
+    expect(await screen.findByText('edit')).toBeInTheDocument();
+  });
+
+  it('opens a confirmation dialog instead of deleting when the delete button is clicked', async () => {
+    const user = userEvent.setup();
+    seedListAndLibrary();
+    const { container } = renderAt();
+    await user.click(await screen.findByRole('button', { name: copy.lists.remove }));
+    const dialog = screen.getByRole('alertdialog');
+    expect(dialog).toBeInTheDocument();
+    // Regression net for the `<p>`-wrapper / nested-`<p>` bug:
+    // the description target must contain both lines of the
+    // multi-paragraph body, not just the first one. If the
+    // wrapper starts as `<p>` again the HTML parser auto-closes
+    // it and `aria-describedby` ends up pointing at an empty
+    // element — this assertion catches that at the spec level.
+    const describedById = dialog.getAttribute('aria-describedby');
+    expect(describedById).not.toBeNull();
+    if (describedById === null) throw new Error('aria-describedby should be set');
+    const target = container.querySelector(`#${describedById}`);
+    expect(target).toBeInstanceOf(HTMLDivElement);
+    expect(target).toHaveTextContent(copy.lists.removeConfirm);
+    expect(target).toHaveTextContent(copy.lists.deleteDialogBody);
+    // Nothing was deleted while the dialog is open.
+    expect(window.localStorage.getItem('cineteca:lists:v1')).not.toBeNull();
+    expect(
+      screen.getByRole('button', { name: `${copy.lists.remove}: 90s noir` }),
+    ).toBeInTheDocument();
+  });
+
+  it('removes the list and navigates back only after confirming in the dialog', async () => {
     const user = userEvent.setup();
     seedListAndLibrary();
     renderAt();
     await user.click(await screen.findByRole('button', { name: copy.lists.remove }));
+    await user.click(screen.getByRole('button', { name: `${copy.lists.remove}: 90s noir` }));
     expect(await screen.findByText(copy.lists.empty)).toBeInTheDocument();
     const stored = window.localStorage.getItem('cineteca:lists:v1');
     const parsed = stored === null ? [] : (JSON.parse(stored) as unknown[]);
     expect(parsed).toEqual([]);
+  });
+
+  it('keeps the list and stays on the page when the dialog is cancelled', async () => {
+    const user = userEvent.setup();
+    seedListAndLibrary();
+    renderAt();
+    await user.click(await screen.findByRole('button', { name: copy.lists.remove }));
+    await user.click(await screen.findByRole('button', { name: copy.lists.cancel }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '90s noir', level: 1 })).toBeInTheDocument();
+    const stored = JSON.parse(window.localStorage.getItem('cineteca:lists:v1') ?? '[]') as {
+      name: string;
+    }[];
+    expect(stored).toHaveLength(1);
+    expect(stored[0]?.name).toBe('90s noir');
+  });
+
+  it('closes the dialog with Escape without deleting the list', async () => {
+    const user = userEvent.setup();
+    seedListAndLibrary();
+    renderAt();
+    await user.click(await screen.findByRole('button', { name: copy.lists.remove }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    const stored = JSON.parse(
+      window.localStorage.getItem('cineteca:lists:v1') ?? '[]',
+    ) as unknown[];
+    expect(stored).toHaveLength(1);
+  });
+
+  it('moves initial focus to the cancel button and traps Tab inside the dialog', async () => {
+    const user = userEvent.setup();
+    seedListAndLibrary();
+    renderAt();
+    await user.click(await screen.findByRole('button', { name: copy.lists.remove }));
+    const cancel = screen.getByRole('button', { name: copy.lists.cancel });
+    await waitFor(() => {
+      expect(cancel).toHaveFocus();
+    });
+    // Shift+Tab from the first focusable wraps to the last one
+    // (the confirm button), proving the trap cycles inside.
+    await user.keyboard('{Shift>}{Tab}{/Shift}');
+    expect(screen.getByRole('button', { name: `${copy.lists.remove}: 90s noir` })).toHaveFocus();
+  });
+
+  it('shows the "Already in this list" hint on every in-list movie card', async () => {
+    seedListAndLibrary();
+    renderAt();
+    const hints = await screen.findAllByText(copy.lists.movieAlreadyInList);
+    expect(hints.length).toBeGreaterThanOrEqual(1);
   });
 
   it('sets the document title to the list name on a successful render', async () => {
@@ -181,6 +278,16 @@ describe('ListDetailPage', () => {
       seedListAndLibrary();
       const { container } = renderAt();
       await screen.findByRole('heading', { name: '90s noir', level: 1 });
+      const violations = await runAxe(container);
+      expect(violations, formatViolations(violations)).toEqual([]);
+    });
+
+    it('has no axe-core violations while the delete dialog is open', async () => {
+      const user = userEvent.setup();
+      seedListAndLibrary();
+      const { container } = renderAt();
+      await user.click(await screen.findByRole('button', { name: copy.lists.remove }));
+      await screen.findByRole('alertdialog');
       const violations = await runAxe(container);
       expect(violations, formatViolations(violations)).toEqual([]);
     });

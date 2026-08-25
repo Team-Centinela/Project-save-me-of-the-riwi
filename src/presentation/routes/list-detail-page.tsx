@@ -22,9 +22,10 @@
 //      collapses to a hint when the library is empty or when
 //      every saved movie is already in the list.
 
-import { type ReactNode, useCallback, useMemo } from 'react';
+import { type ReactNode, useCallback, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { MovieCard } from '@/presentation/components/feature/movie-card';
+import { ConfirmDialog } from '@/presentation/components/ui/confirm-dialog';
 import { EmptyState } from '@/presentation/components/ui/empty-state';
 import { Skeleton } from '@/presentation/components/ui/skeleton';
 import { formatDateTime } from '@/domain/format/date-time';
@@ -50,6 +51,10 @@ export function ListDetailPage(): ReactNode {
   const library = useLibrary();
   const lists = useLists();
   const id = parseId(params.listId);
+  // The destructive delete is guarded by a confirmation dialog
+  // (issue #83): the button only opens the dialog; the actual
+  // `lists.remove` fires from the dialog's confirm button.
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const list = useMemo(() => {
     if (id === null) return undefined;
@@ -161,17 +166,26 @@ export function ListDetailPage(): ReactNode {
               {copy.lists.moviesCount(inListEntries.length)}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              void onDelete();
-            }}
-            disabled={lists.isRemoving}
-            aria-label={copy.lists.remove}
-            className="inline-flex min-h-touch items-center justify-center rounded-card border border-danger/40 px-5 text-sm font-medium text-danger transition-opacity hover:bg-danger/10 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-          >
-            {copy.lists.remove}
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              to={`/my-lists/${id}/edit`}
+              className="inline-flex min-h-touch items-center justify-center rounded-card border border-ink-muted/30 px-5 text-sm font-medium text-ink transition-colors hover:border-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            >
+              {copy.lists.editTitle}
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                setConfirmOpen(true);
+              }}
+              disabled={lists.isRemoving}
+              aria-label={copy.lists.remove}
+              aria-haspopup="dialog"
+              className="inline-flex min-h-touch items-center justify-center rounded-card border border-danger/40 px-5 text-sm font-medium text-danger transition-opacity hover:bg-danger/10 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            >
+              {copy.lists.remove}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -191,6 +205,7 @@ export function ListDetailPage(): ReactNode {
               return (
                 <li key={entry.id} className="flex flex-col gap-2">
                   <MovieCard movie={movie} imageConfig={config.data?.images} locale={locale} />
+                  <p className="text-xs text-ink-muted">{copy.lists.movieAlreadyInList}</p>
                   <button
                     type="button"
                     onClick={() => {
@@ -244,6 +259,26 @@ export function ListDetailPage(): ReactNode {
           </ul>
         )}
       </section>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title={copy.lists.deleteDialogTitle}
+        body={
+          <>
+            <p>{copy.lists.removeConfirm}</p>
+            <p>{copy.lists.deleteDialogBody}</p>
+          </>
+        }
+        confirmLabel={copy.lists.remove}
+        confirmAriaLabel={`${copy.lists.remove}: ${list.name}`}
+        onConfirm={() => {
+          setConfirmOpen(false);
+          void onDelete();
+        }}
+        onCancel={() => {
+          setConfirmOpen(false);
+        }}
+      />
     </article>
   );
 }

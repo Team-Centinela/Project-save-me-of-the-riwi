@@ -61,7 +61,7 @@ export function ListForm({
   const descriptionErrorId = useId();
   const formErrorId = useId();
   const formSuccessId = useId();
-  const formAriaLabel = copy.lists.createAria;
+  const formAriaLabel = mode === 'create' ? copy.lists.createAria : copy.lists.editAria;
 
   const {
     register,
