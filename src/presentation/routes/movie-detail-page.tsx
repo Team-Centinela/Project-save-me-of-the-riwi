@@ -186,7 +186,7 @@ export function MovieDetailPage(): ReactNode {
     backdropPath: movie.backdropPath.kind === 'present' ? movie.backdropPath.value : '',
     voteAverage,
     voteCount,
-    genreIds: movie.genreIds,
+    genreIds: [...movie.genreIds],
     savedAt: new Date().toISOString(),
   };
 
